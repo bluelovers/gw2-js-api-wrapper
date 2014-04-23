@@ -514,6 +514,11 @@
 							lang: language
 						}
 					}).done(function(d) {
+
+						for (var i in d.maps){
+							d.maps[i]['map_id'] = i;
+						}
+
 						return me.maps = d.maps;
 					});
 				}
