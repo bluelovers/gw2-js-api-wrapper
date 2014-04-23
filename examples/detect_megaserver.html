@@ -34,15 +34,25 @@
 
 			_elem2 = $('<ol/>').appendTo(_elem1);
 
+			var _a = [];
+
 			for (var j in map_floor[i]['maps'])
 			{
-				map_floor[i]['maps'][j].map_id = j;
+				_a[j] = map_floor[i]['maps'][j];
+				_a[j].map_id = j;
+			}
 
-				if (map_floor[i]['maps'][j].sectors.length > 1 && map_floor[i]['maps'][j].min_level >= 0)
+			_a.sort(function(a,b) {
+				return a.min_level - b.min_level;
+			});
+
+			for (var j in _a)
+			{
+				if (_a[j].sectors.length > 1 && _a[j].min_level >= 0)
 				{
 					_s++
 
-					var _elem3 = $('<li>' + map_floor[i]['maps'][j].name + ' (' + map_floor[i]['maps'][j].min_level + '~' + map_floor[i]['maps'][j].max_level + ')' + '</li>').data(map_floor[i]['maps'][j]).appendTo(_elem2);
+					var _elem3 = $('<li>' + _a[j].name + ' (' + _a[j].min_level + '~' + _a[j].max_level + ')' + '</li>').data(_a[j]).appendTo(_elem2);
 
 					console.log(_elem3.data());
 				}
