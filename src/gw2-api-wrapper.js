@@ -544,8 +544,11 @@
 			if (language == null) {
 				language = "en";
 			}
+			if (floorID == null) {
+				floorID = 0;
+			}
 			if (this.checkValidLanguage(language)) {
-				if (continentID && floorID) {
+				if (continentID && jQuery.isNumeric(floorID)) {
 					id = continentID + "," + floorID;
 					if (!this.mapFloors || !this.mapFloors[id]) {
 						me = this;
