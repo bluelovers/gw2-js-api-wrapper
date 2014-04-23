@@ -1,0 +1,88 @@
+<html>
+<head>
+	<title></title>
+	<style>
+		div{
+			margin-bottom: 5px;
+		}
+	</style>
+</head>
+<body>
+	<div>
+		Map:
+		<ol id="map"></ol>
+	</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="../src/jquery.selector.data.js"></script>
+<script src="../src/gw2-api-wrapper.js"></script>
+<script>
+	$(function(){
+		var GW2 = new GW2API,
+			$map = $("#map");
+
+		var worlds = GW2.getWorldNames();
+		var map_floor = GW2.getMapFloor(1, 0)['regions'];
+
+		var wid = 1021 || worlds[0].id;
+
+		var _s = 0;
+
+		for (var i in map_floor)
+		{
+			var _elem1 = $('<li>' + map_floor[i].name + '</li>').appendTo($map);
+
+			_elem2 = $('<ol/>').appendTo(_elem1);
+
+			var _a = [];
+
+			for (var j in map_floor[i]['maps'])
+			{
+				_a[j] = map_floor[i]['maps'][j];
+				_a[j].map_id = j;
+			}
+
+			_a.sort(function(a,b) {
+				return a.min_level - b.min_level;
+			});
+
+			for (var j in _a)
+			{
+				if (_a[j].sectors.length > 1 && _a[j].min_level >= 0)
+				{
+					_s++
+
+					var _elem3 = $('<li>' + _a[j].name + ' (' + _a[j].min_level + '~' + _a[j].max_level + ')' + '</li>').data(_a[j]).appendTo(_elem2);
+
+					console.log(_elem3.data());
+				}
+			}
+		}
+
+		console.log($map.find('li:data(min_level>0)').size());
+
+		$map.find('li:data(map_id)').each(function(){
+			var _this = $(this);
+
+			if (_this.data('min_level') > 0)
+			{
+				var _events = GW2.getEvents(wid, _this.data('map_id'));
+
+				if (!$(_events).size())
+				{
+					_this.css('color', 'blue');
+				}
+				else
+				{
+//					_this.append($(_events).size());
+				}
+			}
+			else
+			{
+				_this.css('color', '#ccc');
+			}
+		});
+	});
+</script>
+</body>
+</html>

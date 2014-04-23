@@ -21,6 +21,7 @@
 	<div>
 		Event:
 		<select id="event" autocomplete="off" disabled></select>
+		(<span id="selected_map_events">?</span>)
 		You selected <strong id="selected_event">nothing</strong></span>
 	</div>
 	<div>
@@ -70,19 +71,21 @@
 				$selectedServer.text(GW2.getWorldName($(this).val()));
 
 				//Get all map names
-				var maps=GW2.getMapNames();
+				var maps=GW2.getMaps();
 
-				$map.html(buildOptions(maps, "id", "name")).prop("disabled", false);
+				$map.html(buildOptions(maps, "map_id", "map_name")).prop("disabled", false);
 			}
 		});
 
 		$map.on("change", function(){
 			if ($(this).val()){
 				//Get a single map's name
-				$selectedMap.text(GW2.getMapName($(this).val()));
+				$selectedMap.text(GW2.getMap($(this).val()).map_name);
 
 				//Get all events on the selected server and map
 				var events=GW2.getEvents($server.val(), $(this).val());
+
+				$('#selected_map_events').text($(events).size());
 
 				$event.html(buildOptions(events, "event_id", "event_id")).prop("disabled", false);
 			}
