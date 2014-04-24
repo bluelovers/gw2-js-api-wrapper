@@ -17,12 +17,22 @@
 		 * http://wiki.guildwars2.com/index.php?title=MediaWiki:GameLinks.js
 		 **/
 		gamelink : function(type, id){
-			if (type.match(/(1|2|4|7|8|10)/)) {
-				var typeId = String.fromCharCode(type);
+			var typeId = 0;
+
+			if (type.match(/(1|2|4|7|8|10)/))
+			{
+				typeId = String.fromCharCode(type);
 
 				if (type == 2)
 					typeId += String.fromCharCode(1);
+			}
+			else if ($.gw2.gamelink.typeid[type])
+			{
+				typeId = $.gw2.gamelink.typeid[type];
+			}
 
+			if (typeId)
+			{
 				id = BEtoLE(String.fromCharCode(parseInt(id)));
 
 				var pad = String.fromCharCode(0) + String.fromCharCode(0);
