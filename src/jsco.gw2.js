@@ -17,7 +17,7 @@
 		 * http://wiki.guildwars2.com/index.php?title=MediaWiki:GameLinks.js
 		 **/
 		gamelink : function(type, id){
-			var typeId = 0;
+			var typeId = '0';
 
 			if (type.match(/(1|2|4|7|8|10)/))
 			{
