@@ -13,8 +13,38 @@
 		gw2: _gw2,
 	});
 
-	$.extend($.gw2, {
-		api: _gw2api,
+	$.extend(_gw2, _gw2api, _gw2, {
+
+		_defaults: {
+			conf: {
+				lang: 'en',
+			},
+		},
+
+		_data: {
+			conf: {
+			},
+		},
+
+		_api: _gw2api,
+
+		setOptions: function(options)
+		{
+			$.extend(this._data.conf, {
+			}, options);
+		},
+
+		getOption: function(name)
+		{
+			if (name)
+			{
+				return this._data.conf[name];
+			}
+			else
+			{
+				return this._data.conf;
+			}
+		},
 
 		/**
 		 * http://wiki.guildwars2.com/index.php?title=MediaWiki:GameLinks.js
@@ -47,7 +77,42 @@
 
 			return false;
 		},
+
+		getMapTyriaNames: function(language)
+		{
+			var me;
+			if (!language)
+			{
+				language = this.getOption('lang');
+			}
+			if (this.checkValidLanguage(language))
+			{
+				if (!this.mapTyriaNames)
+				{
+					me = this;
+					$.ajax(
+					{
+						url: "http://gw2.chillerlan.net/json/gw2_maps.json",
+						type: "get",
+						dataType: "json",
+						async: false,
+					}).done(function(d)
+					{
+						for (var i in d)
+						{
+							d[i]['name'] = d[i]['name_' + language];
+						}
+
+						return me.mapTyriaNames = d;
+					});
+				}
+				return this.mapTyriaNames;
+			}
+			return false;
+		},
 	});
+
+	_gw2.setOptions(_gw2._defaults.conf);
 
 	$.extend($.gw2.gamelink, {
 		typeid: {
