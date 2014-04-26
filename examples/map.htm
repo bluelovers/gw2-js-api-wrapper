@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html" />
+	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<meta name="author" content="bluelovers" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+	<meta charset="utf-8" />
+	<title>無標題 3</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+
+	<style type="text/css">
+
+	body {
+    padding: 0;
+    margin: 0;
+}
+html, body, #map {
+    height: 100%;
+}
+
+	.leaflet-container {
+    background: #000;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+}
+	</style>
+</head>
+
+<body>
+<div id="map" class="dark"></div>
+<script>
+var map;
+
+function unproject(coord) {
+    return map.unproject(coord, map.getMaxZoom());
+}
+
+function onMapClick(e) {
+    console.log("You clicked the map at " + map.project(e.latlng));
+}
+
+$(function () {
+    "use strict";
+
+    var southWest, northEast;
+
+    map = L.map("map", {
+        minZoom: 0,
+        maxZoom: 7,
+        crs: L.CRS.Simple,
+        zoomControl: true,
+		attributionControl: true,
+
+		trackResize : true,
+
+    })
+	.setView([2061, 1896], 0)
+	;
+
+    L.control.attribution({prefix:false});
+
+    southWest = unproject([0, 32768]);
+    northEast = unproject([32768, 0]);
+
+    map.setMaxBounds(new L.LatLngBounds(southWest, northEast));
+
+    var tyria = L.tileLayer("https://tiles.guildwars2.com/1/1/{z}/{x}/{y}.jpg", {
+        minZoom: 0,
+        maxZoom: 7,
+        continuousWorld: true,
+        attribution: "&copy; 2013 ArenaNet, Inc.",
+		// All rights reserved. NCsoft, the interlocking NC logo, ArenaNet, Guild Wars, Guild Wars Factions, Guild Wars Nightfall, Guild Wars: Eye of the North, Guild Wars 2, and all associated logos and designs are trademarks or registered trademarks of NCsoft Corporation. All other trademarks are the property of their respective owners."
+	}).addTo(map);
+
+	tyria.max_bounds = [[0, 32768],[32768, 0]];
+	tyria.continent = 1;
+
+    map.on("click", onMapClick);
+
+    0 && $.getJSON("https://api.guildwars2.com/v1/map_floor.json?continent_id=1&floor=1", function (data) {
+        var region, gameMap, i, il, poi;
+
+        for (region in data.regions) {
+            region = data.regions[region];
+
+            for (gameMap in region.maps) {
+                gameMap = region.maps[gameMap];
+
+                for (i = 0, il = gameMap.points_of_interest.length; i < il; i++) {
+                    poi = gameMap.points_of_interest[i];
+
+                    if (poi.type != "waypoint") {
+                        continue;
+                    }
+
+                    L.marker(unproject(poi.coord), {
+                        title: poi.name
+                    }).addTo(map);
+                }
+            }
+        }
+    });
+
+    $("#map").height($(window).height()).width($(window).width());
+    map.setZoom(3);
+//	map.invalidateSize();
+});
+</script>
+
+</body>
+</html>
