@@ -55,7 +55,7 @@ require(["../../src/main"], function()
 			minZoom: 0,
 			maxZoom: 7,
 			continuousWorld: true,
-			attribution: "&copy; 2013 ArenaNet, Inc.",
+			attribution: "&copy; ArenaNet, Inc.",
 			// All rights reserved. NCsoft, the interlocking NC logo, ArenaNet, Guild Wars, Guild Wars Factions, Guild Wars Nightfall, Guild Wars: Eye of the North, Guild Wars 2, and all associated logos and designs are trademarks or registered trademarks of NCsoft Corporation. All other trademarks are the property of their respective owners."
 		}).addTo(map);
 
