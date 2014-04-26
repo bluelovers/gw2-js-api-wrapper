@@ -5,6 +5,7 @@ requirejs.config(
 	paths: {
 		'css': 'lib/requirejs/plugin/css',
 		'order': 'lib/requirejs/plugin/order',
+		'text': 'lib/requirejs/plugin/text',
 
 		'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min',
 
@@ -22,7 +23,7 @@ requirejs.config(
 
 		'leaflet':
 		{
-			deps: ['css!leaflet-css'],
+			deps: ['css!leaflet-css', 'jquery'],
 			exports: 'L',
 		},
 
@@ -41,9 +42,9 @@ require(['order!jquery'], function()
 	 console.log($);
 });
 
-require(["leaflet"], function()
-{
-    console.log(L);
-});
+//require(["leaflet"], function()
+//{
+//    console.log(L);
+//});
 
 //define(['css!leaflet-css', 'leaflet'], { });
