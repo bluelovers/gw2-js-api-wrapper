@@ -169,4 +169,4 @@
 		return le;
 	}
 
-})(jQuery.noConflict());
+})(jQuery);
