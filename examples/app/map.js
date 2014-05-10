@@ -3,8 +3,13 @@ require(["../../src/main"], function()
 
 	require(["leaflet"], function()
 	{
+		"use strict";
 
-		console.log(123);
+		var GW2MapApi = function(){
+
+
+
+		};
 
 		var map;
 
@@ -18,7 +23,7 @@ require(["../../src/main"], function()
 			console.log("You clicked the map at " + map.project(e.latlng, map.getMaxZoom()));
 		}
 
-		"use strict";
+
 
 		var southWest, northEast;
 
