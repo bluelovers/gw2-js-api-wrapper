@@ -15,10 +15,10 @@ requirejs.config(
 		'leaflet': 'http://cdn.leafletjs.com/leaflet-0.7.2/leaflet',
 		'leaflet-css': 'http://cdn.leafletjs.com/leaflet-0.7.2/leaflet',
 
-		'gw2': 'src/jsco.gw2.js',
-		'gw2api': 'src/gw2-api-wrapper.js',
+		'gw2': 'src/jsco.gw2',
+		'gw2api': 'src/gw2-api-wrapper',
 
-		'gw2map': 'src/gw2/gw2map.js',
+		'gw2map': 'src/gw2/gw2map',
 
 		'propertyParser': 'lib/requirejs/plugin/propertyParser',
 	},
@@ -58,7 +58,8 @@ requirejs.config(
 		},
 
 		'gw2map': {
-			deps: ['order!jquery''order!gw2api', 'order!gw2'],
+			deps: ['order!jquery', 'order!leaflet', 'order!gw2api', 'order!gw2'],
+			exports: 'GW2MapApi',
 		},
 	},
 });
