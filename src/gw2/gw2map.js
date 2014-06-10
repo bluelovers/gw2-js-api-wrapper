@@ -24,7 +24,7 @@
 			},
 
 			mists: {
-				center: [2620, 2629],
+				center: [10496, 11656],
 				zoom: 3,
 			},
 		};
@@ -37,7 +37,7 @@
 
 			_layerids[i] = _layerids[name] = name;
 
-			_layer[name] = $.extend(true, _default[name], {
+			_layer[name] = $.extend(true, {}, _default[name], {
 			}, {
 				// https://tiles.guildwars2.com/1/1/{z}/{x}/{y}.jpg
 				_tileuri: $.gw2.getTileURL(i, floor, '{z}', '{x}', '{y}', '{s}'),
@@ -49,37 +49,13 @@
 
 				minZoom: data.min_zoom,
 				maxZoom: data.max_zoom,
-
-				continuousWorld: true,
-
-				attribution: "&copy; ArenaNet, Inc.",
-
-				reuseTiles: true,
-
-				subdomains: [1, 2, 3, 4],
+				maxNativeZoom: data.max_zoom,
 			});
-		}
-
-		var _layerobj = [],
-			_layermaps = [];
-
-		for (var i in _layerids)
-		{
-			var name = _layerids[i];
-
-			if (i == name) continue;
-
-			_layermaps[_layer[name]._name] = _layerobj[i - 1] = L.tileLayer(_layer[name]._tileuri, _layer[name]);
 		}
 
 		return {
 			layer: _layer,
 			layerids: _layerids,
-			layerobj: _layerobj,
-
-			baseMaps: _layermaps,
-			overlayMaps: {
-			},
 		};
 	})();
 
@@ -106,20 +82,42 @@
 
 						keyboard: true,
 					},
+
+					layer: {
+						continuousWorld: true,
+
+						attribution: "&copy; ArenaNet, Inc.",
+
+						reuseTiles: true,
+
+						subdomains: [1, 2, 3, 4],
+
+						//noWrap: false,
+					},
 				},
 			},
 
 			data: {
 				inited: false,
+
+				options: {
+					inited: false,
+				},
 			},
 
-			init: function()
+			init: function(id, cid)
 			{
 				if (!this.data.inited)
 				{
-					$.extend(this.data, {
-						inited: true,
-					}, layerInit);
+					this._initOptions();
+					this._initLayer();
+
+
+					this.id = id;
+					this.cid = cid || 1;
+					this._map = null;
+
+					this.data.inited = true;
 
 					this.map();
 
@@ -129,6 +127,53 @@
 					});
 
 					this.switchLayer(this.cid);
+
+					console.log(this.data);
+				}
+
+				return this;
+			},
+
+			_initOptions: function()
+			{
+				$.extend(this.data.options, {
+					//inited: true,
+				}, this._defaults.options, {
+					inited: true,
+				});
+			},
+
+			_initLayer: function()
+			{
+				if (!this.data.inited)
+				{
+					$.extend(this.data, {
+						//inited: true,
+					}, layerInit);
+
+					for (var i in this.data.layer)
+					{
+						$.extend(this.data.layer[i], this.data.options.layer);
+					}
+
+					var _layerobj = [],
+						_layermaps = [];
+
+					for (var i in this.data.layerids)
+					{
+						var name = this.data.layerids[i];
+
+						if (i == name) continue;
+
+						_layermaps[this.data.layer[name]._name] = _layerobj[i - 1] = L.tileLayer(this.data.layer[name]._tileuri, this.data.layer[name]);
+					}
+
+					$.extend(this.data, {
+					layerobj: _layerobj,
+
+					baseMaps: _layermaps,
+					overlayMaps: {
+					}});
 				}
 			},
 
@@ -138,9 +183,9 @@
 				{
 					var options = $.extend(
 					{
-					}, this._defaults.options.map, {
+					}, this.data.options.map, {
 						//layers: this.data.layerobj
-					}, options);
+					}, this.data.layer[this.data.layerids[(this.cid + '').toLowerCase()]], options);
 
 					this._map = L.map(this.id, options);
 
@@ -153,11 +198,15 @@
 
 			project: function(latlng, zoom)
 			{
+				//console.log([latlng, this.map().getMaxZoom()]);
+
 				return this.map().project(latlng.latlng || latlng, zoom || this.map().getMaxZoom());
 			},
 
 			unproject: function(coord, zoom)
 			{
+				//console.log([coord, this.map().getMaxZoom()]);
+
 				return this.map().unproject(coord, zoom || this.map().getMaxZoom());
 			},
 
@@ -169,28 +218,87 @@
 				return new L.LatLngBounds(southWest, northEast);
 			},
 
+			dims2center: function(dims, target)
+			{
+				var target = target || [0, 0];
+				target[0] = target[0] || 0;
+				target[1] = target[1] || 0;
+
+				var x = target[0] + (dims[0] - target[0])/2;
+				var y = target[1] + (dims[1] - target[1])/2;
+
+				return [x, y];
+			},
+
 			setView: function(coord, zoom)
 			{
-				console.log([coord, zoom]);
+				//console.log([coord, zoom]);
 
-				return this.map().setView(this.unproject(coord), zoom);
+				return this.map().setView(coord.latlng ? coord.latlng : this.unproject(coord), zoom || this.map().getZoom());
 			},
 
 			switchLayer: function(cid)
 			{
-				var layer = this.data.layer[this.data.layerids[(cid + '').toLowerCase()]];
+				//var layer = this.data.layer[this.data.layerids[(cid + '').toLowerCase()]];
+				var layer = this.getMapLayerData(cid);
 
 				this.map().setMaxBounds(this.dims2bounds(layer._size));
 
-				this.setView(layer.center || [0, 0], layer.zoom || 7);
+				this.setView(layer.center || this.dims2center(layer._size), layer.zoom || this.map().getMaxZoom());
+
+				return this;
+			},
+
+			getMapLayerData: function(cid)
+			{
+				var cid = (cid === undefined) ? this.cid : cid;
+
+				var layer = this.data.layer[this.data.layerids[(cid + '').toLowerCase()]];
+
+				return layer;
+			},
+
+			getMapFloor: function(floor)
+			{
+				return $.gw2.getMapFloor(this.cid, floor || 1);
+			},
+
+			currentIconSize: function()
+			{
+				var currentzoom = this.map().getZoom();
+
+				var currentIconSize = 0;
+
+				// Resize all waypoint icons in all zones
+				switch (currentzoom)
+				{
+					case 7: currentIconSize = 32; break;
+					case 6: currentIconSize = 28; break;
+					case 5: currentIconSize = 24; break;
+					case 4: currentIconSize = 20; break;
+					case 3: currentIconSize = 16; break;
+				}
+
+				return currentIconSize;
+			},
+
+			changeMarkerIcon: function(pMarker, pIconURL, pSize)
+			{
+				if (pSize === undefined)
+				{
+					pSize = 32;
+				}
+
+				var _options = $.extend({}, pIconURL.options, {
+					iconSize: [pSize, pSize],
+					iconAnchor: [pSize/2, pSize/2],
+				});
+
+				pMarker.setIcon(new L.icon(_options));
 			},
 		});
 
-		this.id = id;
-		this.cid = cid || 1;
-		this._map = null;
-
-		this.init();
+		this.init(id, cid);
 	};
 
 	if (typeof define === 'function' && define.amd)
