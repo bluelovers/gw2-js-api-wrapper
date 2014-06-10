@@ -1,12 +1,14 @@
-(function($)
+(function($, _GW2API)
 {
 	var unsafeWindow = unsafeWindow || window;
 
-	var _gw2api = new GW2API;
+	var _gw2api = new _GW2API;
 	var _gw2 = new(function()
 	{
 		this._self = this;
 	})();
+
+	var GW2Api = _gw2;
 
 	$.extend(
 	{
@@ -110,6 +112,23 @@
 			}
 			return false;
 		},
+
+		getAssetURL: function(signature, id, format)
+		{
+			if ((signature && !id) || (!signature && id))
+			{
+				var signature = _gw2api.getAsset(signature || id);
+				var id = null;
+			}
+
+			if ($.isPlainObject(signature))
+			{
+				var id = signature.file_id;
+				var signature = signature.signature;
+			}
+
+			return _gw2api.getAssetURL(signature, id, format);
+		},
 	});
 
 	_gw2.setOptions(_gw2._defaults.conf);
@@ -169,4 +188,14 @@
 		return le;
 	}
 
-})(jQuery);
+	if (typeof define === 'function' && define.amd)
+	{
+		define('GW2Api', [], function()
+		{
+			return GW2Api;
+		});
+	}
+
+	return unsafeWindow.GW2Api = GW2Api;
+
+})(jQuery, GW2API);
