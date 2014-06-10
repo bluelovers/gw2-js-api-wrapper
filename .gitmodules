@@ -1,3 +1,6 @@
 [submodule "lib/jquery/plugin/jquery-stylesheet"]
 	path = lib/jquery/plugin/jquery-stylesheet
 	url = https://github.com/f0r4y312/jquery-stylesheet.git
+[submodule "lib/leafletjs/plugin/Leaflet.markercluster"]
+	path = lib/leafletjs/plugin/Leaflet.markercluster
+	url = https://github.com/Leaflet/Leaflet.markercluster.git
