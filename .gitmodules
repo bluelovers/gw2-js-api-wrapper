@@ -1,0 +1,3 @@
+[submodule "lib/jquery/plugin/jquery-stylesheet"]
+	path = lib/jquery/plugin/jquery-stylesheet
+	url = https://github.com/f0r4y312/jquery-stylesheet.git
