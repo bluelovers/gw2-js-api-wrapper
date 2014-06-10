@@ -1,8 +1,6 @@
-(function($)
+(function($, unsafeWindow)
 {
 	'use strict';
-
-	var unsafeWindow = unsafeWindow || window;
 
 	var layerInit = (function()
 	{
@@ -37,7 +35,8 @@
 
 			_layerids[i] = _layerids[name] = name;
 
-			_layer[name] = $.extend(true, {}, _default[name], {
+			_layer[name] = $.extend(true, {
+			}, _default[name], {
 			}, {
 				// https://tiles.guildwars2.com/1/1/{z}/{x}/{y}.jpg
 				_tileuri: $.gw2.getTileURL(i, floor, '{z}', '{x}', '{y}', '{s}'),
@@ -169,11 +168,12 @@
 					}
 
 					$.extend(this.data, {
-					layerobj: _layerobj,
+						layerobj: _layerobj,
 
-					baseMaps: _layermaps,
-					overlayMaps: {
-					}});
+						baseMaps: _layermaps,
+						overlayMaps: {
+						}
+					});
 				}
 			},
 
@@ -224,8 +224,8 @@
 				target[0] = target[0] || 0;
 				target[1] = target[1] || 0;
 
-				var x = target[0] + (dims[0] - target[0])/2;
-				var y = target[1] + (dims[1] - target[1])/2;
+				var x = target[0] + (dims[0] - target[0]) / 2;
+				var y = target[1] + (dims[1] - target[1]) / 2;
 
 				return [x, y];
 			},
@@ -272,11 +272,21 @@
 				// Resize all waypoint icons in all zones
 				switch (currentzoom)
 				{
-					case 7: currentIconSize = 32; break;
-					case 6: currentIconSize = 28; break;
-					case 5: currentIconSize = 24; break;
-					case 4: currentIconSize = 20; break;
-					case 3: currentIconSize = 16; break;
+				case 7:
+					currentIconSize = 32;
+					break;
+				case 6:
+					currentIconSize = 28;
+					break;
+				case 5:
+					currentIconSize = 24;
+					break;
+				case 4:
+					currentIconSize = 20;
+					break;
+				case 3:
+					currentIconSize = 16;
+					break;
 				}
 
 				return currentIconSize;
@@ -289,9 +299,11 @@
 					pSize = this.currentIconSize(this.map().getMaxZoom());;
 				}
 
-				var _options = $.extend({}, pIconURL.options, {
+				var _options = $.extend(
+				{
+				}, pIconURL.options, {
 					iconSize: [pSize, pSize],
-					iconAnchor: [pSize/2, pSize/2],
+					iconAnchor: [pSize / 2, pSize / 2],
 				});
 
 				pMarker.setIcon(new L.icon(_options));
@@ -301,7 +313,10 @@
 		this.init(id, cid);
 	};
 
-	if (typeof define === 'function' && define.amd)
+	if (typeof module === 'object' && typeof module.exports === 'object') {
+		module.exports = GW2MapApi;
+	}
+	else if (typeof define === 'function' && define.amd)
 	{
 		define('GW2MapApi', [], function()
 		{
@@ -309,6 +324,17 @@
 		});
 	}
 
-	return window.GW2MapApi = GW2MapApi;
+	(function(_old)
+	{
+		GW2MapApi.noConflict = function()
+		{
+			unsafeWindow.GW2MapApi = _old;
+			return this;
+		};
 
-})(jQuery);
+		unsafeWindow.GW2MapApi = GW2MapApi
+	})(unsafeWindow.GW2MapApi);
+
+	return this;
+
+})(jQuery, unsafeWindow || window);
