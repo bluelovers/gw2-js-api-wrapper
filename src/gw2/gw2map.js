@@ -263,9 +263,9 @@
 				return $.gw2.getMapFloor(this.cid, floor || 1);
 			},
 
-			currentIconSize: function()
+			currentIconSize: function(currentzoom)
 			{
-				var currentzoom = this.map().getZoom();
+				var currentzoom = (currentzoom === undefined) ? this.map().getZoom() || currentzoom;
 
 				var currentIconSize = 0;
 
@@ -286,7 +286,7 @@
 			{
 				if (pSize === undefined)
 				{
-					pSize = 32;
+					pSize = this.currentIconSize(this.map().getMaxZoom());;
 				}
 
 				var _options = $.extend({}, pIconURL.options, {
