@@ -12,8 +12,16 @@ requirejs.config(
 		'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min',
 		'jquery.selector.data': 'lib/jquery/plugin/jquery.selector.data',
 
-		'leaflet': 'http://cdn.leafletjs.com/leaflet-0.7.2/leaflet',
-		'leaflet-css': 'http://cdn.leafletjs.com/leaflet-0.7.2/leaflet',
+		'jquery.plus': 'lib/jquery/plugin/jquery.plus',
+
+		'leaflet': ['http://cdn.leafletjs.com/leaflet-0.7.3/leaflet', 'lib/leafletjs/leaflet'],
+		'leaflet-css': ['http://cdn.leafletjs.com/leaflet-0.7.3/leaflet', 'lib/leafletjs/leaflet'],
+
+		'leaflet.markercluster': 'http://leaflet.github.io/Leaflet.markercluster/dist/leaflet.markercluster-src.js',
+		'leaflet.markercluster-css': 'http://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.css',
+		'leaflet.markercluster-css-def': 'http://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.Default.css',
+
+		'leaflet-plus': 'lib/leafletjs/plugin/leaflet.plus',
 
 		'gw2': 'src/jsco.gw2',
 		'gw2api': 'src/gw2-api-wrapper',
@@ -21,6 +29,7 @@ requirejs.config(
 		'gw2map': 'src/gw2/gw2map',
 
 		'propertyParser': 'lib/requirejs/plugin/propertyParser',
+
 	},
 
 	map: {
@@ -44,9 +53,21 @@ requirejs.config(
 			deps: ['jquery'],
 		},
 
+		'jquery.plus': {
+			deps: ['jquery'],
+		},
+
 		'leaflet': {
 			deps: ['load!leaflet-css', 'jquery'],
 			exports: 'L',
+		},
+
+		'leaflet.markercluster': {
+			deps: ['load!leaflet.markercluster-css', 'load!leaflet.markercluster-css-def'],
+		},
+
+		'leaflet-plus': {
+			deps: ['order!jquery', 'order!leaflet'],
 		},
 
 		'gw2': {
