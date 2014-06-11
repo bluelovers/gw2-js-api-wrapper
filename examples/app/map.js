@@ -5,27 +5,15 @@ require(['../../src/main'], function()
 	{
 		'use strict';
 
-		var a = $.gw2.getAssetURL('map_complete');
-
-		console.log(a);
-
 		var gw2map = new GW2MapApi("map", 1);
 		var map = gw2map.map();
 
 		map.on('click', function(e)
 		{
 			console.log("You clicked the map at " + gw2map.project(e.latlng));
-		}).on('dblclick', function(e)
-		{
-			if (map.getZoom() === map.getMaxZoom())
-			{
-				map.setZoom(Math.round(map.getMaxZoom() / 2));
-			}
-			else
-			{
-				map.setView(e.latlng, map.getMaxZoom());
-			}
 		});
+
+		gw2map.hookZoom('dblclick');
 
 		(function(data, map)
 		{
@@ -36,13 +24,8 @@ require(['../../src/main'], function()
 			var currentIconSize = gw2map.currentIconSize();
 			//var pane1 = map.createPane('waypoint');
 
-			var wpIcon = L.icon(
-			{
-				iconUrl: $.gw2.getAssetURL('map_waypoint'),
-
-				iconSize: [currentIconSize, currentIconSize],
-
-				className: 'leaflet-marker-waypoint',
+			var wpIcon = gw2map.getIcon('waypoint', {
+				iconSize: [currentIconSize, currentIconSize]
 			});
 
 			var region, gameMap, i, il, poi;
@@ -71,17 +54,7 @@ require(['../../src/main'], function()
 							pane: 'waypoint',
 						});
 
-						waypoint.on('dblclick', function(e)
-						{
-							if (map.getZoom() === map.getMaxZoom())
-							{
-								map.setZoom(Math.round(map.getMaxZoom() / 2));
-							}
-							else
-							{
-								map.setView(e.latlng, map.getMaxZoom());
-							}
-						});
+						gw2map.hookZoom('dblclick', waypoint);
 
 						_wp.push(waypoint);
 					}
@@ -109,7 +82,7 @@ require(['../../src/main'], function()
 
 				if (currentIconSize && map.hasLayer(cities))
 				{
-					wpIcon.initialize(
+					wpIcon.setOptions(
 					{
 						iconSize: [currentIconSize, currentIconSize],
 						//iconAnchor: [currentIconSize/2, currentIconSize/2],
