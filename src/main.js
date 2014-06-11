@@ -14,8 +14,16 @@ requirejs.config(
 
 		'jquery.plus': 'lib/jquery/plugin/jquery.plus',
 
-		'leaflet': ['http://cdn.leafletjs.com/leaflet-0.7.3/leaflet', 'lib/leafletjs/leaflet'],
-		'leaflet-css': ['http://cdn.leafletjs.com/leaflet-0.7.3/leaflet', 'lib/leafletjs/leaflet'],
+		'leaflet': [
+			'http://leaflet-cdn.s3.amazonaws.com/build/master/leaflet-src',
+			'http://cdn.leafletjs.com/leaflet-0.7.3/leaflet',
+			'lib/leafletjs/leaflet'
+			],
+		'leaflet-css': [
+			'http://leaflet-cdn.s3.amazonaws.com/build/master/leaflet',
+			'http://cdn.leafletjs.com/leaflet-0.7.3/leaflet',
+			'lib/leafletjs/leaflet'
+			],
 
 		'leaflet.markercluster': 'http://leaflet.github.io/Leaflet.markercluster/dist/leaflet.markercluster-src.js',
 		'leaflet.markercluster-css': 'http://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.css',
@@ -85,8 +93,11 @@ requirejs.config(
 	},
 });
 
-require(['order!jquery'], function()
+require(['jquery', 'leaflet'], function($, L)
 {
+	// support Leaflet 0.8-dev
+	window.L = L;
+
 	console.log($);
 });
 
