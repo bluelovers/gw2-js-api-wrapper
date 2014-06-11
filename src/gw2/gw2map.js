@@ -1,6 +1,8 @@
-(function($, unsafeWindow)
+(function($)
 {
 	'use strict';
+
+	var unsafeWindow = unsafeWindow || window;
 
 	var layerInit = (function()
 	{
@@ -101,6 +103,10 @@
 
 				options: {
 					inited: false,
+				},
+
+				cache: {
+
 				},
 			},
 
@@ -265,7 +271,7 @@
 
 			currentIconSize: function(currentzoom)
 			{
-				var currentzoom = (currentzoom === undefined) ? this.map().getZoom() || currentzoom;
+				var currentzoom = (currentzoom === undefined) ? this.map().getZoom() : currentzoom;
 
 				var currentIconSize = 0;
 
@@ -308,12 +314,86 @@
 
 				pMarker.setIcon(new L.icon(_options));
 			},
+
+			hookZoom: function(event, who, fn)
+			{
+				GW2MapApi.Util.hookZoom(who || this.map(), event, this.map(), fn);
+
+				return this;
+			},
+
+			getIcon: function(name, options, clone)
+			{
+				if (!clone && this.getCache('icon', name))
+				{
+					return this.getCache('icon', name);
+				}
+				else
+				{
+					return this.setCache('icon', name, GW2MapApi.Util.getIcon(name, options));
+				}
+			},
+
+			setCache: function(tag, name, value)
+			{
+				return this.data.cache[(tag || 'cache') + '_' + name] = value;
+			},
+
+			getCache: function(tag, name)
+			{
+				return this.data.cache[(tag || 'cache') + '_' + name];
+			},
+
 		});
 
 		this.init(id, cid);
 	};
 
-	if (typeof module === 'object' && typeof module.exports === 'object') {
+	GW2MapApi.Util = $.extend(
+	{
+	}, {
+
+		hookZoom: function(who, event, map, fn)
+		{
+			var map = map || who;
+
+			who.on(event, fn ||
+			function(e)
+			{
+				if (map.getZoom() === map.getMaxZoom())
+				{
+					map.setZoom(Math.round(map.getMaxZoom() / 2));
+				}
+				else
+				{
+					map.setView(e.latlng, map.getMaxZoom());
+				}
+			});
+		},
+
+		getIcon: function(name, options)
+		{
+			return L.icon(GW2MapApi.Media[name]).setOptions(options);
+		},
+
+	});
+
+	GW2MapApi.Media = $.extend(
+	{
+	}, {
+
+		waypoint: {
+			iconUrl: $.gw2.getAssetURL('map_waypoint'),
+
+			iconSize: [32, 32],
+
+			className: 'leaflet-marker-waypoint',
+		},
+
+	});
+
+	if (typeof module === 'object' && typeof module.exports === 'object')
+	{
 		module.exports = GW2MapApi;
 	}
 	else if (typeof define === 'function' && define.amd)
@@ -335,6 +415,6 @@
 		unsafeWindow.GW2MapApi = GW2MapApi
 	})(unsafeWindow.GW2MapApi);
 
-	return this;
+	return GW2MapApi;
 
-})(jQuery, unsafeWindow || window);
+})(jQuery);
