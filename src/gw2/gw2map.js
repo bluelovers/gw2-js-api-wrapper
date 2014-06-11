@@ -1,4 +1,4 @@
-(function($)
+(function($, undefined)
 {
 	'use strict';
 
@@ -82,9 +82,15 @@
 						zoomAnimation: true,
 
 						keyboard: true,
+
+						//noWrap: true,
+						continuousWorld: true,
+
+						//bounceAtZoomLimits: false,
 					},
 
 					layer: {
+						//noWrap: true,
 						continuousWorld: true,
 
 						attribution: "&copy; ArenaNet, Inc.",
@@ -92,6 +98,8 @@
 						reuseTiles: true,
 
 						subdomains: [1, 2, 3, 4],
+
+						errorTileUrl: L.Util.emptyImageUrl,
 
 						//noWrap: false,
 					},
@@ -106,7 +114,9 @@
 				},
 
 				cache: {
+					global: {
 
+					},
 				},
 			},
 
@@ -133,7 +143,7 @@
 
 					this.switchLayer(this.cid);
 
-					console.log(this.data);
+					//console.log(this.data);
 				}
 
 				return this;
@@ -336,12 +346,20 @@
 
 			setCache: function(tag, name, value)
 			{
-				return this.data.cache[(tag || 'cache') + '_' + name] = value;
+				var tag = tag || 'global';
+
+				if (!this.data.cache[tag]) this.data.cache[tag] = {};
+
+				return this.data.cache[tag][name] = value;
 			},
 
 			getCache: function(tag, name)
 			{
-				return this.data.cache[(tag || 'cache') + '_' + name];
+				var tag = tag || 'global';
+
+				if (!this.data.cache[tag]) return undefined;
+
+				return this.data.cache[tag][name];
 			},
 
 		});
