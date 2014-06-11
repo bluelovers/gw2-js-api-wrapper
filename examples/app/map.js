@@ -19,10 +19,12 @@ require(['../../src/main'], function()
 		{
 			var _wp = [];
 
-			var _style = $('<style id="leaflet-marker-waypoint">.leaflet-marker-waypoint { display: none; }</style>').disable(true).appendTo($('head'));
+			//var _style = $('<style id="leaflet-marker-waypoint">.leaflet-marker-waypoint { display: none; }</style>').disable(true).appendTo($('head'));
+
+			$('<style>.leaflet-control label img { vertical-align: text-bottom; }</style>').appendTo($('head'));
 
 			var currentIconSize = gw2map.currentIconSize();
-			//var pane1 = map.createPane('waypoint');
+			var pane_waypoint = map.createPane('waypoint');
 
 			var wpIcon = gw2map.getIcon('waypoint', {
 				iconSize: [currentIconSize, currentIconSize]
@@ -51,7 +53,7 @@ require(['../../src/main'], function()
 							title: poi.name,
 							icon: wpIcon,
 
-							pane: 'waypoint',
+							pane: pane_waypoint,
 						});
 
 						gw2map.hookZoom('dblclick', waypoint);
@@ -63,17 +65,18 @@ require(['../../src/main'], function()
 
 			var cities = L.layerGroup(_wp);
 
+			gw2map.data.overlayMaps['<img src="' + wpIcon.options.iconUrl + '" height="16" width="16"/> Waypoint'] = cities;
+
 			var control = L.control.layers(
 			{
-			}, {
-				Waypoint: cities,
-			}).addTo(map);
+			}, gw2map.data.overlayMaps).addTo(map);
 
 			map.on("zoomstart", function(e)
 			{
 				//cities.invoke('hide');
 
-				_style.disable(false);
+				//_style.disable(false);
+				$(pane_waypoint).hide();
 			});
 
 			map.on("zoomend", function(e)
@@ -98,12 +101,13 @@ require(['../../src/main'], function()
 						//layer.show();
 					});
 
-					_style.disable(true);
+					//_style.disable(true);
+					$(pane_waypoint).show();
 				}
 			});
 
 			control.toggleOverlay(cities, true);
-			_style.disable(true);
+			//_style.disable(true);
 
 		})(gw2map.getMapFloor(), gw2map.map());
 
