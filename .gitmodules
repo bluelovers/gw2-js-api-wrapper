@@ -4,3 +4,12 @@
 [submodule "lib/leafletjs/plugin/Leaflet.markercluster"]
 	path = lib/leafletjs/plugin/Leaflet.markercluster
 	url = https://github.com/Leaflet/Leaflet.markercluster.git
+[submodule "lib/leafletjs/plugin/leaflet-indoor"]
+	path = lib/leafletjs/plugin/leaflet-indoor
+	url = https://github.com/cbaines/leaflet-indoor.git
+[submodule "lib/leafletjs/plugin/Leaflet-MiniMap"]
+	path = lib/leafletjs/plugin/Leaflet-MiniMap
+	url = https://github.com/Norkart/Leaflet-MiniMap.git
+[submodule "lib/leafletjs/plugin/Leaflet.fullscreen"]
+	path = lib/leafletjs/plugin/Leaflet.fullscreen
+	url = https://github.com/Leaflet/Leaflet.fullscreen.git
