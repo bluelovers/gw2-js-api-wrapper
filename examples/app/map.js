@@ -5,7 +5,7 @@ require(['../../src/main'], function()
 	{
 		'use strict';
 
-		var gw2map = new GW2MapApi("map", 1);
+		var gw2map = new GW2MapApi('map', 1);
 		var map = gw2map.map();
 
 		gw2map.on('click', GW2MapApi.Util.hookMapCoord).on('dblclick', GW2MapApi.Util.hookZoomOutIn);
