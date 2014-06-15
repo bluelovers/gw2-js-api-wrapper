@@ -113,6 +113,12 @@
 					inited: false,
 				},
 
+				obj: {
+					control: {
+
+					},
+				},
+
 				cache: {
 					global: {
 
@@ -281,31 +287,7 @@
 
 			currentIconSize: function(currentzoom)
 			{
-				var currentzoom = (currentzoom === undefined) ? this.map().getZoom() : currentzoom;
-
-				var currentIconSize = 0;
-
-				// Resize all waypoint icons in all zones
-				switch (currentzoom)
-				{
-				case 7:
-					currentIconSize = 32;
-					break;
-				case 6:
-					currentIconSize = 28;
-					break;
-				case 5:
-					currentIconSize = 24;
-					break;
-				case 4:
-					currentIconSize = 20;
-					break;
-				case 3:
-					currentIconSize = 16;
-					break;
-				}
-
-				return currentIconSize;
+				return GW2MapApi.Util.currentIconSize((currentzoom === undefined) ? this.map().getZoom() : currentzoom);
 			},
 
 			changeMarkerIcon: function(pMarker, pIconURL, pSize)
@@ -325,13 +307,6 @@
 				pMarker.setIcon(new L.icon(_options));
 			},
 
-			hookZoom: function(event, who, fn)
-			{
-				GW2MapApi.Util.hookZoom(who || this.map(), event, this.map(), fn);
-
-				return this;
-			},
-
 			getIcon: function(name, options, clone)
 			{
 				if (!clone && this.getCache('icon', name))
@@ -348,7 +323,9 @@
 			{
 				var tag = tag || 'global';
 
-				if (!this.data.cache[tag]) this.data.cache[tag] = {};
+				if (!this.data.cache[tag]) this.data.cache[tag] =
+				{
+				};
 
 				return this.data.cache[tag][name] = value;
 			},
@@ -362,6 +339,99 @@
 				return this.data.cache[tag][name];
 			},
 
+			on: function(event, who, data, fn)
+			{
+				if (GW2MapApi.Util.isFunc(who))
+				{
+					var fn = who;
+					var who = undefined;
+					var data =
+					{
+					};
+				}
+				else if (GW2MapApi.Util.isFunc(data))
+				{
+					var fn = map;
+					var data =
+					{
+					};
+				}
+				else if (!data)
+				{
+					var data =
+					{
+					};
+				}
+
+				if (L.Util.isArray(who))
+				{
+					for (var i in who)
+					{
+						this.on(event, i, data, fn);
+					}
+
+					return this;
+				}
+
+				var who = who || this.map();
+
+				L.Util.extend(data, {
+					map: data.map || this.map(),
+
+					gw2map: this,
+
+					_disable: (data._disable === undefined && this.data.options.disableAutoHookData) ? true : data._disable,
+				});
+
+				//console.log(data);
+
+				who.on(event, data._disable ? fn : function(e)
+				{
+					//console.log(e, data);
+
+					return fn.call(this, e, data);
+				});
+
+				return this;
+			},
+
+			getControl: function(name)
+			{
+				if (!name)
+				{
+					return this.data.obj.control
+				}
+				else if (!this.data.obj.control[name])
+				{
+					this.data.obj.control[name] = this._getControl(name).addTo(this.map());
+				}
+
+				return this.data.obj.control[name];
+			},
+
+			_getControl: function(name)
+			{
+				var control;
+
+				switch (name)
+				{
+				case 'layers':
+					control = L.control.layers(
+					{
+					}, this.data.overlayMaps);
+					break;
+				}
+
+				return control;
+			},
+
+			addOverlay: function(layer, name)
+			{
+				this.getControl('layers').addOverlay(layer, name);
+
+				return this;
+			},
+
 		});
 
 		this.init(id, cid);
@@ -371,28 +441,73 @@
 	{
 	}, {
 
-		hookZoom: function(who, event, map, fn)
+		isFunc: function(func)
 		{
-			var map = map || who;
+			return (typeof func === 'function');
+		},
 
-			who.on(event, fn ||
-			function(e)
+		hookZoomOutIn: function(e, data)
+		{
+			//console.log([e, data]);
+
+			var map = data.map;
+
+			if (map.getZoom() === map.getMaxZoom())
 			{
-				if (map.getZoom() === map.getMaxZoom())
-				{
-					map.setZoom(Math.round(map.getMaxZoom() / 2));
-				}
-				else
-				{
-					map.setView(e.latlng, map.getMaxZoom());
-				}
-			});
+				map.setZoom(Math.round(map.getMaxZoom() / 2));
+			}
+			else
+			{
+				map.setView(e.latlng, map.getMaxZoom());
+			}
+		},
+
+		log: function(msg)
+		{
+			console.log(arguments.length > 1 ? arguments : msg);
+		},
+
+		hookMapCoord: function(e, data)
+		{
+			GW2MapApi.Util.log('Current map at ' + data.map.project(e.latlng));
 		},
 
 		getIcon: function(name, options)
 		{
 			return L.icon(GW2MapApi.Media[name]).setOptions(options);
 		},
+
+		currentIconSize: function(currentzoom)
+		{
+			var currentIconSize = 0;
+
+			// Resize all waypoint icons in all zones
+			switch (currentzoom)
+			{
+			case 7:
+				currentIconSize = 32;
+				break;
+			case 6:
+				currentIconSize = 28;
+				break;
+			case 5:
+				currentIconSize = 24;
+				break;
+			case 4:
+				currentIconSize = 20;
+				break;
+			case 3:
+				currentIconSize = 16;
+				break;
+			}
+
+			return currentIconSize;
+		},
+
+		toSize: function(width, height)
+		{
+			return [width, height || width];
+		}
 
 	});
 
