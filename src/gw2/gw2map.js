@@ -65,58 +65,12 @@
 	var GW2MapApi = function(id, cid)
 	{
 		$.extend(this, {
-			_defaults: {
-				options: {
-					map: {
-						crs: L.CRS.Simple,
-						zoomControl: true,
-						attributionControl: true,
-
-						doubleClickZoom: false,
-
-						trackResize: true,
-
-						inertia: true,
-
-						fadeAnimation: true,
-						zoomAnimation: true,
-
-						keyboard: true,
-
-						//noWrap: true,
-						continuousWorld: true,
-
-						//bounceAtZoomLimits: false,
-					},
-
-					layer: {
-						//noWrap: true,
-						continuousWorld: true,
-
-						attribution: "&copy; ArenaNet, Inc.",
-
-						reuseTiles: true,
-
-						subdomains: [1, 2, 3, 4],
-
-						errorTileUrl: L.Util.emptyImageUrl,
-
-						//noWrap: false,
-					},
-				},
-			},
 
 			data: {
 				inited: false,
 
 				options: {
 					inited: false,
-				},
-
-				obj: {
-					control: {
-
-					},
 				},
 
 				cache: {
@@ -126,16 +80,15 @@
 				},
 			},
 
-			init: function(id, cid)
+			init: function(id, data)
 			{
 				if (!this.data.inited)
 				{
-					this._initOptions();
+					this._initOptions(data);
 					this._initLayer();
 
-
 					this.id = id;
-					this.cid = cid || 1;
+					this.cid = this.data.options.cid;
 					this._map = null;
 
 					this.data.inited = true;
@@ -155,13 +108,33 @@
 				return this;
 			},
 
-			_initOptions: function()
+			_initOptions: function(data)
 			{
+				var data = this._initData(data);
+
 				$.extend(this.data.options, {
 					//inited: true,
-				}, this._defaults.options, {
+				}, GW2MapApi._defaults.options, data, {
 					inited: true,
 				});
+			},
+
+			_initData: function(data)
+			{
+				if (!isNaN(data))
+				{
+					data = {
+						cid: data,
+					};
+				}
+				else
+				{
+					$.extend(data, GW2MapApi._defaults.data);
+				}
+
+				data.cid = data.cid || GW2MapApi._defaults.cid;
+
+				return data;
 			},
 
 			_initLayer: function()
@@ -319,7 +292,7 @@
 				}
 			},
 
-			setCache: function(tag, name, value)
+			setCache: function(tag, name, value, sub)
 			{
 				var tag = tag || 'global';
 
@@ -327,14 +300,34 @@
 				{
 				};
 
+				if (sub)
+				{
+					if (!this.data.cache[tag][name])
+					{
+						this.data.cache[tag][name] = {};
+					}
+
+					return this.data.cache[tag][name][sub] = value;
+				}
+
 				return this.data.cache[tag][name] = value;
 			},
 
-			getCache: function(tag, name)
+			getCache: function(tag, name, sub)
 			{
 				var tag = tag || 'global';
 
-				if (!this.data.cache[tag]) return undefined;
+				if (!this.data.cache[tag] || !this.data.cache[tag][name]) return;
+
+				if (sub)
+				{
+					if (this.data.cache[tag][name][sub])
+					{
+						return this.data.cache[tag][name][sub];
+					}
+
+					return;
+				}
 
 				return this.data.cache[tag][name];
 			},
@@ -399,14 +392,21 @@
 			{
 				if (!name)
 				{
-					return this.data.obj.control
+					return this.getCache('obj', 'control');
 				}
-				else if (!this.data.obj.control[name])
+				else if (!this.getCache('obj', 'control', name))
 				{
-					this.data.obj.control[name] = this._getControl(name).addTo(this.map());
+					this.setControl(name, this._getControl(name).addTo(this.map()));
 				}
 
-				return this.data.obj.control[name];
+				return this.getCache('obj', 'control', name);
+			},
+
+			setControl: function(name, value)
+			{
+				this.setCache('obj', 'control', value, name);
+
+				return this;
 			},
 
 			_getControl: function(name)
@@ -474,6 +474,14 @@
 
 		getIcon: function(name, options)
 		{
+			if (!GW2MapApi.Media[name])
+			{
+				if ($.gw2.getAsset('map_' + name))
+				{
+					GW2MapApi.Util.addMediaIcon(name, 'map_' + name);
+				}
+			}
+
 			return L.icon(GW2MapApi.Media[name]).setOptions(options);
 		},
 
@@ -507,21 +515,92 @@
 		toSize: function(width, height)
 		{
 			return [width, height || width];
-		}
+		},
 
+		addMediaIcon: function(id, icon)
+		{
+			GW2MapApi.Media[id] = {
+				iconUrl: $.gw2.getAssetURL(icon),
+
+				iconSize: GW2MapApi.Util.toSize(GW2MapApi._defaults.iconSize),
+
+				className: 'leaflet-marker-' + id,
+			};
+		},
+
+	});
+
+	$.extend(GW2MapApi, {
+		_defaults: {
+			options: {
+				map: {
+					crs: L.CRS.Simple,
+					zoomControl: true,
+					attributionControl: true,
+
+					doubleClickZoom: false,
+
+					trackResize: true,
+
+					inertia: true,
+
+					fadeAnimation: true,
+					zoomAnimation: true,
+
+					keyboard: true,
+
+					//noWrap: true,
+					continuousWorld: true,
+
+					//bounceAtZoomLimits: false,
+				},
+
+				layer: {
+					//noWrap: true,
+					continuousWorld: true,
+
+					attribution: "&copy; ArenaNet, Inc.",
+
+					reuseTiles: true,
+
+					subdomains: [1, 2, 3, 4],
+
+					errorTileUrl: L.Util.emptyImageUrl,
+
+					//noWrap: false,
+				},
+			},
+
+			iconSize: 32,
+
+			data: {
+
+			},
+
+			cid: 1,
+
+			/*
+			media: {
+				waypoint: 'map_waypoint',
+				dungeon: 'map_dungeon',
+			},
+			*/
+		},
 	});
 
 	GW2MapApi.Media = $.extend(
 	{
 	}, {
 
+		/*
 		waypoint: {
 			iconUrl: $.gw2.getAssetURL('map_waypoint'),
 
-			iconSize: [32, 32],
+			iconSize: GW2MapApi.Util.toSize(GW2MapApi._defaults.iconSize),
 
 			className: 'leaflet-marker-waypoint',
 		},
+		*/
 
 	});
 
