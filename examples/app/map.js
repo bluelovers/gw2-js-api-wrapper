@@ -14,46 +14,76 @@ require(['../../src/main'], function()
 		{
 			var _wp = [];
 
-			$('<style>.leaflet-control label img { vertical-align: text-bottom; }</style>').appendTo($('head'));
-
 			var currentIconSize = gw2map.currentIconSize();
-			var pane_waypoint = map.createPane('waypoint');
+			var pane_waypoint = gw2map.getPane('waypoint');
 
-			var wpIcon = gw2map.getIcon('waypoint', {
-				iconSize: GW2MapApi.Util.toSize(currentIconSize),
-			});
+			var wpIcon = gw2map.getIcon('waypoint');
 
-			var region, gameMap, i, il, poi;
+			var region, gameMap, i, ii, poi, map_id;
 
-			for (region in data.regions)
+			for (ii in data.regions)
 			{
-				region = data.regions[region];
+				region = data.regions[ii];
 
-				for (gameMap in region.maps)
+				for (map_id in region.maps)
 				{
-					gameMap = region.maps[gameMap];
+					gameMap = region.maps[map_id];
 
-					for (i = 0, il = gameMap.points_of_interest.length; i < il; i++)
+					for (i in gameMap.points_of_interest)
 					{
 						poi = gameMap.points_of_interest[i];
 
-						if (poi.type != "waypoint")
+						if (poi.type != "waypoint" && poi.type != "unlock")
 						{
 							continue;
 						}
 
-						var waypoint = L.marker(gw2map.unproject(poi.coord), {
+						var waypoint = gw2map.marker(gw2map.unproject(poi.coord), {
 							title: poi.name,
-							icon: wpIcon,
+							icon: gw2map.getIcon(poi.type),
 
 							pane: pane_waypoint,
+
+							poi: poi,
 						});
 
 						gw2map.on('dblclick', waypoint, GW2MapApi.Util.hookZoomOutIn);
 
+						gw2map.on('click', waypoint, function(e)
+						{
+							GW2MapApi.Util.log(gw2map.project(this.getLatLng()));
+						});
+
 						_wp.push(waypoint);
 					}
 				}
+			}
+
+			for (i in GW2MapApi._defaults.temple)
+			{
+				poi = GW2MapApi._defaults.temple[i];
+
+				poi.type = 'temple';
+
+				var waypoint = gw2map.marker(gw2map.unproject(poi.coord), {
+					title: poi.name,
+					icon: gw2map.getIcon(poi.type),
+
+					pane: pane_waypoint,
+
+					poi: poi,
+
+					zIndexOffset: 10,
+				});
+
+				gw2map.on('dblclick', waypoint, GW2MapApi.Util.hookZoomOutIn);
+
+				gw2map.on('click', waypoint, function(e)
+				{
+					GW2MapApi.Util.log(gw2map.project(this.getLatLng()));
+				});
+
+				_wp.push(waypoint);
 			}
 
 			var cities = L.layerGroup(_wp);
@@ -62,32 +92,28 @@ require(['../../src/main'], function()
 
 			var $pane_waypoint = $(pane_waypoint);
 
-			map.on("zoomstart", function(e)
+			gw2map.on("zoomstart", function(e)
 			{
 				$pane_waypoint.hide();
-			});
-
-			map.on("zoomend", function(e)
+			}).on("zoomend", function(e)
 			{
 				var currentIconSize = gw2map.currentIconSize();
 
 				if (currentIconSize && map.hasLayer(cities))
 				{
-					wpIcon.setOptions(
-					{
-						iconSize: GW2MapApi.Util.toSize(currentIconSize),
-					});
-
 					cities.eachLayer(function(layer)
 					{
-						layer.updateIconStyles();
+						layer.updateIconStyles(
+						{
+							iconSize: GW2MapApi.Util.toSize(currentIconSize),
+						});
 					});
 
-					$pane_waypoint.show();
+					$pane_waypoint.fadeIn('slow');
 				}
-			});
+			}).getControl('layers').toggleOverlay(cities, true);
 
-			gw2map.getControl('layers').toggleOverlay(cities, true);
+			$pane_waypoint.hide().delay(1000).fadeIn('slow');
 
 		})(gw2map.getMapFloor());
 
