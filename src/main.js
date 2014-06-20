@@ -12,6 +12,8 @@ requirejs.config(
 		'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min',
 		'jquery.selector.data': 'lib/jquery/plugin/jquery.selector.data',
 
+		'jquery.stylesheet': 'lib/jquery/plugin/jquery-stylesheet/jquery.stylesheet',
+
 		'jquery.plus': 'lib/jquery/plugin/jquery.plus',
 
 		'leaflet': [
@@ -35,6 +37,10 @@ requirejs.config(
 		'gw2api': 'src/gw2-api-wrapper',
 
 		'gw2map': 'src/gw2/gw2map',
+		'gw2css': 'src/gw2/gw2',
+
+		'menomonia': 'https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia',
+		'menomonia-italic': 'https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia-italic',
 
 		'propertyParser': 'lib/requirejs/plugin/propertyParser',
 
@@ -57,48 +63,34 @@ requirejs.config(
 			},
 		},
 
-		'jquery.selector.data': {
-			deps: ['jquery'],
-		},
-
-		'jquery.plus': {
-			deps: ['jquery'],
-		},
+		'jquery.selector.data': ['jquery'],
+		'jquery.stylesheet': ['jquery'],
+		'jquery.plus': ['jquery'],
 
 		'leaflet': {
 			deps: ['load!leaflet-css', 'jquery'],
 			exports: 'L',
 		},
 
-		'leaflet.markercluster': {
-			deps: ['load!leaflet.markercluster-css', 'load!leaflet.markercluster-css-def'],
-		},
+		'leaflet.markercluster': ['load!leaflet.markercluster-css', 'load!leaflet.markercluster-css-def'],
 
-		'leaflet-plus': {
-			deps: ['order!jquery', 'order!leaflet'],
-		},
+		'leaflet-plus': ['jquery', 'leaflet'],
 
-		'gw2': {
-			deps: ['order!jquery', 'order!gw2api'],
-		},
+		'gw2': ['order!jquery', 'order!gw2api', 'load!menomonia', 'load!menomonia-italic', 'load!gw2css'],
 
-		'gw2api': {
-			deps: ['jquery'],
-		},
+		'gw2api': ['jquery'],
 
 		'gw2map': {
-			deps: ['order!jquery', 'order!leaflet', 'order!gw2api', 'order!gw2'],
+			deps: ['order!jquery', 'order!leaflet', 'order!gw2api', 'order!gw2', 'order!jquery.stylesheet'],
 			exports: 'GW2MapApi',
 		},
 	},
 });
 
-require(['jquery', 'leaflet'], function($, L)
+define(['jquery', 'leaflet'], function($, L)
 {
 	// support Leaflet 0.8-dev
 	window.L = L;
-
-	console.log($);
 });
 
 //require(["leaflet"], function()
