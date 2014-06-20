@@ -127,7 +127,23 @@
 				var signature = signature.signature;
 			}
 
+			if (!signature || !id) return;
+
 			return _gw2api.getAssetURL(signature, id, format);
+		},
+
+		getMapPoiEx: function()
+		{
+			if (!this.mapPoiEx)
+			{
+				var _this;
+
+				$.getJSON('../src/gw2/api/poi.json', function(data){
+					return _this.mapPoiEx = data;
+				});
+			}
+
+			return this.mapPoiEx;
 		},
 	});
 
