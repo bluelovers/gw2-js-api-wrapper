@@ -1,0 +1,82 @@
+[{
+	dungeon: {
+		"Caudecus's Manor": {
+			"coord": [13278, 11941],
+			"name": "Caudecus's Manor",
+			"map_id": 15
+		},
+		"Torchbearer": {
+			"coord": [11061.4, 11014.8],
+			"name": "Torchbearer",
+			"map_id": 18
+		},
+		"Ascalonian Catacombs": {
+			"coord": [27653.5, 13964.2],
+			"name": "Ascalonian Catacombs",
+			"map_id": 19
+		},
+		"Citadel of Flame": {
+			"coord": [26947.3, 8702.01],
+			"name": "Citadel of Flame",
+			"map_id": 22
+		},
+		"Sorrow's Embrace": {
+			"coord": [19676.3, 17719.4],
+			"name": "Sorrow's Embrace",
+			"map_id": 26
+		},
+		"Honor of the Waves": {
+			"coord": [22439.6, 8805.81],
+			"name": "Honor of the Waves",
+			"map_id": 30
+		},
+		"Twilight Arbor": {
+			"coord": [9563.39, 16555.1],
+			"name": "Twilight Arbor",
+			"map_id": 34
+		},
+		"Crucible of Eternity": {
+			"coord": [20979.7, 21895.5],
+			"name": "Crucible of Eternity",
+			"map_id": 39
+		},
+		"Fractals of the Mists": {
+			"coord": [17184.9, 14841],
+			"name": "Fractals of the Mists",
+			"map_id": 50
+		},
+	},
+
+	temple: {
+		"Temple of Balthazar": {
+			"coord": [15090.7, 24650.9],
+			"name": "Temple of Balthazar",
+			"map_id": 51
+		},
+		"Temple of Grenth": {
+			"coord": [10456.2, 28691.3],
+			"name": "Temple of Grenth",
+			"map_id": 62
+		},
+		"Temple of Melandru": {
+			"coord": [11330.2, 26667.5],
+			"name": "Temple of Melandru",
+			"map_id": 62
+		},
+		"The Ruined City of Arah": {
+			"coord": [12034.4, 27676.5],
+			"name": "The Ruined City of Arah",
+			"map_id": 62
+		},
+		"Temple of Dwayna": {
+			"coord": [12020.3, 24294.9],
+			"name": "Temple of Dwayna",
+			"map_id": 65
+		},
+		"Temple of Lyssa": {
+			"coord": [13085.2, 23952.9],
+			"name": "Temple of Lyssa",
+			"map_id": 65
+		}
+	},
+}]
