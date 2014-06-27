@@ -18,6 +18,8 @@ define(['jquery'], function($)
 		{
 			this.callInitHooks.apply(this, arguments);
 		}
+
+		return this;
 	};
 
 	$.extend(C, {
@@ -48,20 +50,30 @@ define(['jquery'], function($)
 
 			handler: {
 			},
+
+			handler_alias: {
+			},
+
+			alias: {
+			},
 		},
 
 		api: function(apiname, args)
 		{
-			var ret, data = new Object;
+			var ret, data;
 
 			var apiname = O.apiMap._.alias[apiname];
 
 			var apimap = O.apiMap[apiname];
 
-			var url = apimap.api || (O.apiMap._.server[O.apiMap._.serverid] + '').replace('{@apiname}', apiname);
+			var url = O.fn.tpl(apimap.api || O.apiMap._.server[O.apiMap._.serverid], {
+				apiname: apiname,
+			});
 
-			if (apimap.args && args)
+			if (!apimap.callFn && apimap.args && args)
 			{
+				data = new Object;
+
 				if (isArray(args))
 				{
 					for (var i in args)
@@ -75,24 +87,33 @@ define(['jquery'], function($)
 				}
 			}
 
-			$.ajax(
+			if (apimap.callFn)
 			{
-				url: url,
-				type: 'get',
-				dataType: 'json',
-				async: false,
-				data: data,
-			}).done(function(d)
+				ret = apimap.callFn.call(this, args, url, apimap);
+			}
+			else
 			{
-				return ret = d;
-			});
+				$.ajax(
+				{
+					url: url,
+					type: 'get',
+					dataType: 'json',
+					async: false,
+					data: data,
+				}).done(function(d)
+				{
+					return ret = d;
+				});
+			}
 
 			return ret;
 		},
 
 		get: function(name, key, lang)
 		{
+			var ret;
 			var iskey = false;
+			var fn;
 
 			var lang = lang || this._data.lang;
 
@@ -105,21 +126,36 @@ define(['jquery'], function($)
 
 			if (!apiname)
 			{
+				apiname = name;
+
+				if (fn = O.fn.mapExists(this._data.handler, this._data.handler_alias, apiname))
+				{
+					var args = Array.prototype.slice.call(arguments, 1);
+
+					return fn.apply(this, args);
+				}
+
 				return;
 			}
 
-			if (key)
+			var apimap = O.apiMap[apiname];
+
+			if (apimap.nokey)
+			{
+				iskey = false;
+			}
+			else if (key)
 			{
 				iskey = true;
 			}
 
-			var ret = O.Cache.get(lang, apiname);
+			ret = O.Cache.get(lang, apiname);
 
 			if (!ret)
 			{
 				ret = (function(ret)
 				{
-					if (ret)
+					if (!apimap.source && ret)
 					{
 						var i, i2;
 
@@ -142,14 +178,17 @@ define(['jquery'], function($)
 					}
 
 					return ret;
-				})(this.api(apiname));
+				})(this.api(apiname, apimap.getArgs ? Array.prototype.slice.call(arguments, 1) : null));
 
-				if (this._data.handler && this._data.handler[apiname])
+				if (fn = O.fn.mapExists(this._data.handler, this._data.handler_alias, apiname))
 				{
-					ret = this._data.handler[apiname].call(this, ret);
+					ret = fn.call(this, ret);
 				}
 
-				O.Cache.set(lang, apiname, ret);
+				if (!apimap.nocache)
+				{
+					O.Cache.set(lang, apiname, ret);
+				}
 			}
 
 			//console.log([key, ret]);
@@ -166,7 +205,92 @@ define(['jquery'], function($)
 
 		on: function(apiname, fn)
 		{
-			this._data.handler[(O.apiMap._.alias[apiname] || apiname)] = fn;
+			O.fn.mapAlias(this._data.handler, this._data.handler_alias, apiname, fn);
+
+			return this;
+		},
+
+		off: function(apiname)
+		{
+			delete this._data.handler[(O.apiMap._.alias[apiname] || apiname)];
+
+			return this;
+		},
+
+		add: function(apiname, data)
+		{
+			O.fn.mapAlias(O.apiMap, O.apiMap._.alias, apiname, data || new Object);
+
+			return this;
+		},
+
+		update: function()
+		{
+			var _loop = function(map)
+			{
+				var data = new Object;
+				var i, camel;
+
+				for (i in map)
+				{
+					if (i == '_') continue;
+
+					camel = O.fn.camelCase('get-' + i);
+
+					if (!O.prototype[camel] && !O[camel])
+					{
+						data[camel] = (function(i)
+						{
+							return function()
+							{
+								var args = Array.prototype.slice.call(arguments);
+
+								//console.log([args]);
+
+								args.unshift(i);
+
+								//console.log([args]);
+
+								return O.get.apply(O, args);
+							};
+						})(i);
+					}
+				}
+
+				$.extend(O, data);
+			};
+
+			_loop(O.apiMap);
+			_loop(this._data.handler);
+
+			var i, camel, j;
+			var data = new Object;
+
+			for (var i in O._data.alias)
+			{
+				camel = O.fn.camelCase('get-' + i);
+
+				if (!O.prototype[camel] && !O[camel])
+				{
+					data[camel] = (function(i)
+					{
+						return function()
+						{
+							var args = Array.prototype.slice.call(arguments);
+
+							//console.log([args]);
+
+							args.unshift(i);
+
+							//console.log([args]);
+
+							return O.get.apply(O, args);
+						};
+					})(O._data.alias[i]);
+				}
+			}
+
+			$.extend(O, data);
 
 			return this;
 		}
@@ -179,6 +303,74 @@ define(['jquery'], function($)
 		{
 			return $.camelCase(string.replace(/[_\/]/g, '-'));
 		},
+
+		tpl: function(text, data)
+		{
+			var text = text + '';
+
+			for (var i in data)
+			{
+				text = text.replace('{@' + i + '}', data[i]);
+			}
+
+			return text;
+		},
+
+		mapAlias: function(map, alias, apiname, value)
+		{
+			var name;
+
+			if (isArray(apiname))
+			{
+				//console.log([apiname]);
+
+				name = apiname[0];
+				apiname = apiname[1];
+
+				//console.log([name, apiname]);
+
+				O._data.alias[apiname] = name;
+			}
+
+			alias[apiname] = alias[O.fn.camelCase(apiname)] = alias[O.fn.camelCase('get-' + apiname)] = name || apiname;
+
+			if (arguments.length == 4)
+			{
+				map[(name || apiname)] = value;
+			}
+		},
+
+		mapExists: function(map, alias, apiname)
+		{
+			if (apiname = alias[apiname])
+			{
+				return map[apiname];
+			}
+
+			return;
+		},
+
+		args: function(map, args)
+		{
+			data = new Object;
+
+			if (map && args)
+			{
+				if (isArray(args))
+				{
+					for (var i in args)
+					{
+						if (args[i]) data[(map[i])] = args[i];
+					}
+				}
+				else
+				{
+					data = args;
+				}
+			}
+
+			return data;
+		}
 
 	});
 
@@ -235,6 +427,11 @@ define(['jquery'], function($)
 				'guild_id',
 				'guild_name',
 				],
+
+			nocache: true,
+			getArgs: true,
+			nokey: true,
+			source: true,
 		},
 
 		// Items
@@ -317,23 +514,10 @@ define(['jquery'], function($)
 		},
 
 		files: {
+			alias: ['assets'],
 		},
 
 	});
-
-	O.apiMap._.alias = (function()
-	{
-		var map = new Object;
-
-		for (var i in O.apiMap)
-		{
-			if (i == '_') continue;
-
-			map[i] = map[O.fn.camelCase(i)] = map[O.fn.camelCase('get-' + i)] = i;
-		}
-
-		return map;
-	})();
 
 	O.Cache = $.extend(new Function, C, {
 
@@ -385,6 +569,66 @@ define(['jquery'], function($)
 		},
 
 	});
+
+	O.apiMap._.alias = (function()
+	{
+		var map = new Object;
+
+		for (var i in O.apiMap)
+		{
+			if (i == '_') continue;
+
+			O.fn.mapAlias(null, map, i);
+
+			if (O.apiMap[i].alias)
+			{
+				for (var j in O.apiMap[i].alias)
+				{
+					//console.log([i, O.apiMap[i].alias[j]]);
+
+					O.fn.mapAlias(null, map, [i, O.apiMap[i].alias[j]]);
+				}
+			}
+
+			//map[i] = map[O.fn.camelCase(i)] = map[O.fn.camelCase('get-' + i)] = i;
+		}
+
+		return map;
+	})();
+
+	O.on(['asset/url', 'file/url'], function(signature, id, format)
+	{
+		if ((signature && !id) || (!signature && id))
+		{
+			var signature = O.get('getAsset', signature || id);
+			var id = null;
+		}
+
+		if ($.isPlainObject(signature))
+		{
+			var id = signature.file_id;
+			var signature = signature.signature;
+		}
+
+		if (!signature || !id) return;
+
+		if (format == null)
+		{
+			format = 'png';
+		}
+
+		if (['png', 'jpg'].indexOf(format) > -1)
+		{
+			return 'https://render.guildwars2.com/file/' + signature + '/' + id + '.' + format;
+		}
+
+		return false;
+	}).on('map/tile/url', function(continentID, floorID, z, x, y, s)
+	{
+		return 'https://tiles' + (s ? s : '') + '.guildwars2.com/' + continentID + '/' + floorID + '/' + z + '/' + x + '/' + y + '.jpg';
+	});
+
+	O.update();
 
 	return require.register('gw2api', O);
 
