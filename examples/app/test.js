@@ -23,17 +23,12 @@ require(['examples/bootstrap'], function(r)
 
 			require(['gw2api'], function(gw2api)
 			{
-				console.log([gw2api]);
+				console.log([gw2api, gw2api.apiMap._.alias]);
 
-				var i;
+				console.log(gw2api.get('maps', 15));
+				console.log(gw2api.get('maps', 16));
 
-				for (i in gw2api.apiMap)
-				{
-					if (i != '_')
-					{
-						console.log(gw2api.fn.camelCase(i));
-					}
-				}
+				console.log([gw2api.Cache]);
 			});
 		},
 	});
