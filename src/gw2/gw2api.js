@@ -623,7 +623,7 @@ define(['jquery'], function($)
 		}
 
 		return false;
-	}).on('map/tile/url', function(continentID, floorID, z, x, y, s)
+	}).on(['map/tile/url', 'tile/url'], function(continentID, floorID, z, x, y, s)
 	{
 		return 'https://tiles' + (s ? s : '') + '.guildwars2.com/' + continentID + '/' + floorID + '/' + z + '/' + x + '/' + y + '.jpg';
 	});
