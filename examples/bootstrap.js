@@ -21,7 +21,11 @@ define(['lib/requirejs/extend/require.extend'], function()
 	requirejs.config(
 	{
 		paths: {
-			'jquery': 'https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min',
+			'jquery': [
+				'https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min',
+				'lib/jquery/jquery',
+			],
+
 			'jquery.selector.data': 'lib/jquery/plugin/jquery.selector.data',
 
 			'jquery.stylesheet': 'lib/jquery/plugin/jquery-stylesheet/jquery.stylesheet',
