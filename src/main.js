@@ -55,7 +55,7 @@ requirejs.config(
 	shim: {
 		'jquery': {
 			deps: [],
-			exports: '$',
+			//exports: '$',
 
 			init: function()
 			{
