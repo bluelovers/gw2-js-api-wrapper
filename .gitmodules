@@ -1,0 +1,24 @@
+[submodule "lib/jquery/plugin/jquery-stylesheet"]
+	path = lib/jquery/plugin/jquery-stylesheet
+	url = https://github.com/f0r4y312/jquery-stylesheet.git
+[submodule "lib/leafletjs/plugin/Leaflet.markercluster"]
+	path = lib/leafletjs/plugin/Leaflet.markercluster
+	url = https://github.com/Leaflet/Leaflet.markercluster.git
+[submodule "lib/leafletjs/plugin/leaflet-indoor"]
+	path = lib/leafletjs/plugin/leaflet-indoor
+	url = https://github.com/cbaines/leaflet-indoor.git
+[submodule "lib/leafletjs/plugin/Leaflet-MiniMap"]
+	path = lib/leafletjs/plugin/Leaflet-MiniMap
+	url = https://github.com/Norkart/Leaflet-MiniMap.git
+[submodule "lib/leafletjs/plugin/Leaflet.fullscreen"]
+	path = lib/leafletjs/plugin/Leaflet.fullscreen
+	url = https://github.com/Leaflet/Leaflet.fullscreen.git
+[submodule "lib/leafletjs/plugin/L.Icon.Hover"]
+	path = lib/leafletjs/plugin/L.Icon.Hover
+	url = https://gist.github.com/3398417.git
+[submodule "lib/leafletjs/plugin/leaflet-locatecontrol"]
+	path = lib/leafletjs/plugin/leaflet-locatecontrol
+	url = https://github.com/domoritz/leaflet-locatecontrol.git
+[submodule "lib/leafletjs/plugin/Leaflet.groupedlayercontrol"]
+	path = lib/leafletjs/plugin/Leaflet.groupedlayercontrol
+	url = https://github.com/ismyrnow/Leaflet.groupedlayercontrol.git

@@ -572,8 +572,8 @@
 			return false;
 		};
 
-		GW2API.prototype.getTileURL = function(continentID, floorID, z, x, y) {
-			return "https://tiles.guildwars2.com/" + continentID + "/" + floorID + "/" + z + "/" + x + "/" + y + ".jpg";
+		GW2API.prototype.getTileURL = function(continentID, floorID, z, x, y, s) {
+			return "https://tiles" + (s ? s : '') + ".guildwars2.com/" + continentID + "/" + floorID + "/" + z + "/" + x + "/" + y + ".jpg";
 		};
 
 		GW2API.prototype.getAllEventDetails = function(language) {
