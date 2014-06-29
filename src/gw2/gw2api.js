@@ -48,6 +48,17 @@ define(['jquery'], function($)
 		_data: {
 			lang: 'en',
 
+			_deflang: 'en',
+
+			_langs: {
+				en: 'en',
+				es: 'es',
+				de: 'de',
+				fr: 'fr',
+				ko: 'ko',
+				zh: 'zh',
+			},
+
 			handler: {
 			},
 
@@ -70,29 +81,14 @@ define(['jquery'], function($)
 				apiname: apiname,
 			});
 
-			if (!apimap.callFn && apimap.args && args)
-			{
-				data = new Object;
-
-				if (isArray(args))
-				{
-					for (var i in args)
-					{
-						if (args[i]) data[(apimap.args[i])] = args[i];
-					}
-				}
-				else
-				{
-					data = args;
-				}
-			}
-
 			if (apimap.callFn)
 			{
 				ret = apimap.callFn.call(this, args, url, apimap);
 			}
 			else
 			{
+				data = O.fn.args(apimap.args, args);
+
 				$.ajax(
 				{
 					url: url,
@@ -109,13 +105,23 @@ define(['jquery'], function($)
 			return ret;
 		},
 
+		lang: function(lang)
+		{
+			if (lang)
+			{
+				this._data.lang = O.fn.lang(lang);
+			}
+
+			return this._data.lang;
+		},
+
 		get: function(name, key, lang)
 		{
 			var ret;
 			var iskey = false;
 			var fn;
 
-			var lang = lang || this._data.lang;
+			var lang = this.lang(lang);
 
 			var apiname = O.apiMap._.alias[name];
 
@@ -217,9 +223,18 @@ define(['jquery'], function($)
 			return this;
 		},
 
-		add: function(apiname, data)
+		add: function(apiname, data, update)
 		{
 			O.fn.mapAlias(O.apiMap, O.apiMap._.alias, apiname, data || new Object);
+
+			if (update) this.update_api();
+
+			return this;
+		},
+
+		update_api: function()
+		{
+			O.fn._apiupdate();
 
 			return this;
 		},
@@ -293,7 +308,7 @@ define(['jquery'], function($)
 			$.extend(O, data);
 
 			return this;
-		}
+		},
 
 	});
 
@@ -354,23 +369,63 @@ define(['jquery'], function($)
 		{
 			data = new Object;
 
-			if (map && args)
+			if (map)
 			{
-				if (isArray(args))
+				var args = args || new Array();
+
+				for (var i in map)
 				{
-					for (var i in args)
+					switch (map[i])
 					{
+					case 'lang':
+						data[(map[i])] = O.lang(args[i]);
+						break;
+					default:
 						if (args[i]) data[(map[i])] = args[i];
+						break;
 					}
 				}
-				else
-				{
-					data = args;
-				}
+			}
+			else if (args)
+			{
+				data = args;
 			}
 
 			return data;
-		}
+		},
+
+		lang: function(lang)
+		{
+			lang = O._data._langs[lang] ? O._data._langs[lang] : (O._data.lang ? O._data.lang : O._data._deflang);
+
+			return lang;
+		},
+
+		_apiupdate: function()
+		{
+			var map = O.apiMap._.alias = O.apiMap._.alias || new Object;
+
+			for (var i in O.apiMap)
+			{
+				if (i == '_') continue;
+
+				O.fn.mapAlias(null, map, i);
+
+				if (O.apiMap[i].alias)
+				{
+					for (var j in O.apiMap[i].alias)
+					{
+						//console.log([i, O.apiMap[i].alias[j]]);
+
+						O.fn.mapAlias(null, map, [i, O.apiMap[i].alias[j]]);
+					}
+				}
+
+				//map[i] = map[O.fn.camelCase(i)] = map[O.fn.camelCase('get-' + i)] = i;
+			}
+
+			return map;
+		},
 
 	});
 
@@ -521,17 +576,6 @@ define(['jquery'], function($)
 
 	O.Cache = $.extend(new Function, C, {
 
-		_deflang: 'en',
-
-		_langs: {
-			en: 'en',
-			es: 'es',
-			de: 'de',
-			fr: 'fr',
-			ko: 'ko',
-			zh: 'zh',
-		},
-
 		_cache: {
 
 		},
@@ -553,7 +597,7 @@ define(['jquery'], function($)
 
 		lang: function(lang)
 		{
-			lang = this._langs[lang] ? this._langs[lang] : this._deflang;
+			lang = O.fn.lang(lang);
 
 			if (typeof this._cache[lang] === 'undefined')
 			{
@@ -570,31 +614,7 @@ define(['jquery'], function($)
 
 	});
 
-	O.apiMap._.alias = (function()
-	{
-		var map = new Object;
-
-		for (var i in O.apiMap)
-		{
-			if (i == '_') continue;
-
-			O.fn.mapAlias(null, map, i);
-
-			if (O.apiMap[i].alias)
-			{
-				for (var j in O.apiMap[i].alias)
-				{
-					//console.log([i, O.apiMap[i].alias[j]]);
-
-					O.fn.mapAlias(null, map, [i, O.apiMap[i].alias[j]]);
-				}
-			}
-
-			//map[i] = map[O.fn.camelCase(i)] = map[O.fn.camelCase('get-' + i)] = i;
-		}
-
-		return map;
-	})();
+	O.fn._apiupdate();
 
 	O.on(['asset/url', 'file/url'], function(signature, id, format)
 	{
