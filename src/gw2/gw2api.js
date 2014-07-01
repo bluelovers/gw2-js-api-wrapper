@@ -117,6 +117,8 @@ define(['jquery'], function($)
 
 		get: function(name, key, lang)
 		{
+			var _this = this;
+
 			var ret;
 			var iskey = false;
 			var fn;
@@ -155,32 +157,23 @@ define(['jquery'], function($)
 				iskey = true;
 			}
 
-			ret = O.Cache.get(lang, apiname);
+			ret = apimap.getCacheFn ? apimap.getCacheFn.call(this, lang, apiname, iskey, Array.prototype.slice.call(arguments, 1)) : O.Cache.get(lang, apiname);
 
 			if (!ret)
 			{
 				ret = (function(ret)
 				{
-					if (!apimap.source && ret)
+					if (apimap.source)
 					{
-						var i, i2;
 
-						for (i in ret)
-						{
-							if (i2 === undefined)
-							{
-								i2 = i;
-							}
-							else
-							{
-								return ret;
-							}
-						}
-
-						if (i2 === i)
-						{
-							return ret[i2];
-						}
+					}
+					else if (apimap.wrapFn)
+					{
+						ret = apimap.wrapFn.call(_this, ret);
+					}
+					else if (ret)
+					{
+						ret = O.fn.unwrap.call(_this, ret);
 					}
 
 					return ret;
@@ -193,7 +186,14 @@ define(['jquery'], function($)
 
 				if (!apimap.nocache)
 				{
-					O.Cache.set(lang, apiname, ret);
+					if (apimap.setCacheFn)
+					{
+						apimap.setCacheFn.call(this, lang, apiname, ret, iskey, Array.prototype.slice.call(arguments, 1));
+					}
+					else
+					{
+						O.Cache.set(lang, apiname, ret);
+					}
 				}
 			}
 
@@ -201,7 +201,7 @@ define(['jquery'], function($)
 
 			if (iskey)
 			{
-				return ret[key];
+				return apimap.keyFn ? apimap.keyFn.call(this, ret, key) : ret[key];
 			}
 			else
 			{
@@ -427,6 +427,63 @@ define(['jquery'], function($)
 			return map;
 		},
 
+		unwrap: function(ret)
+		{
+			if (ret)
+			{
+				var i, i2;
+
+				for (i in ret)
+				{
+					if (i2 === undefined)
+					{
+						i2 = i;
+					}
+					else
+					{
+						return ret;
+					}
+				}
+
+				if (i2 === i)
+				{
+					return ret[i2];
+				}
+			}
+
+			return ret;
+		},
+
+		wrapIdName: function(ret, key)
+		{
+			var data = new Object;
+			var key = key || 'id';
+
+			for (var i in ret)
+			{
+				data[ret[i][key]] = ret[i];
+			}
+
+			return data;
+		},
+
+		wrapKey: function(ret, key, unwrap)
+		{
+			var data = ret || new Object;
+
+			if (unwrap)
+			{
+				data = O.fn.unwrap(data);
+			}
+
+			for (var i in data)
+			{
+				data[i][key] = i;
+			}
+
+			return data;
+		},
+
 	});
 
 	O.apiMap = $.extend(new Object, {
@@ -447,6 +504,10 @@ define(['jquery'], function($)
 				'map_id',
 				'event_id',
 				],
+
+			nocache: true,
+			getArgs: true,
+			nokey: true,
 		},
 
 		event_names: {
@@ -454,18 +515,24 @@ define(['jquery'], function($)
 			args: [
 				'lang',
 				],
+
+			wrapFn: O.fn.wrapIdName,
 		},
 
 		map_names: {
 			args: [
 				'lang',
 				],
+
+			wrapFn: O.fn.wrapIdName,
 		},
 
 		world_names: {
 			args: [
 				'lang',
 				],
+
+			wrapFn: O.fn.wrapIdName,
 		},
 
 		event_details: {
@@ -473,6 +540,11 @@ define(['jquery'], function($)
 				'event_id',
 				'lang',
 				],
+
+			wrapFn: function(ret)
+			{
+				return O.fn.wrapKey.call(this, ret, 'event_id', true);
+			},
 		},
 
 		// Guilds
@@ -499,6 +571,8 @@ define(['jquery'], function($)
 				'item_id',
 				'lang',
 				],
+
+			source: true,
 		},
 
 		recipes: {
@@ -509,6 +583,8 @@ define(['jquery'], function($)
 				'recipe_id',
 				'lang',
 				],
+
+			source: true,
 		},
 
 		skins: {
@@ -519,6 +595,8 @@ define(['jquery'], function($)
 				'skin_id',
 				'lang',
 				],
+
+			source: true,
 		},
 
 		// Map information
@@ -531,6 +609,11 @@ define(['jquery'], function($)
 				'map_id',
 				'lang',
 				],
+
+			wrapFn: function(ret)
+			{
+				return O.fn.wrapKey.call(this, ret, 'map_id', true);
+			},
 		},
 
 		map_floor: {
@@ -538,23 +621,35 @@ define(['jquery'], function($)
 				'continent_id',
 				'lang',
 				],
+
+			nocache: true,
+			getArgs: true,
+			nokey: true,
 		},
 
 		// World vs. World
 
 		'wvw/matches': {
+			wrapFn: function(ret)
+			{
+				return O.fn.wrapIdName(ret, 'wvw_match_id');
+			},
 		},
 
 		'wvw/match_details': {
 			args: [
 				'match_id',
 				],
+
+			source: true,
 		},
 
 		'wvw/objective_names': {
 			args: [
 				'lang',
 				],
+
+			wrapFn: O.fn.wrapIdName,
 		},
 
 		// Miscellaneous
@@ -566,6 +661,11 @@ define(['jquery'], function($)
 			args: [
 				'lang',
 				],
+
+			wrapFn: function(ret)
+			{
+				return O.fn.wrapKey.call(this, ret, 'color_id', true);
+			},
 		},
 
 		files: {
