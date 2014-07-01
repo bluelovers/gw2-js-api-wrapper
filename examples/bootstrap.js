@@ -16,6 +16,21 @@ define(['lib/requirejs/extend/require.extend'], function()
 		},
 	});
 
+	requirejs.config(
+	{
+
+		paths: {
+			'scriptpath': 'lib/others/scriptpath',
+		},
+
+		shim: {
+			'scriptpath': {
+				exports: 'getScriptPath',
+			},
+		},
+
+	});
+
 	//console.log([getScriptPath().path()]);
 
 	requirejs.config(
@@ -91,7 +106,7 @@ define(['lib/requirejs/extend/require.extend'], function()
 		shim: {
 
 			'gw2api': {
-				deps: ['load!gw2css'],
+				deps: ['load!gw2css', 'jquery'],
 			},
 
 			'gw2css': {
