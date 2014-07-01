@@ -1,35 +1,29 @@
 requirejs.config(
 {
 	'baseUrl': '..',
-});
 
-require(['examples/bootstrap'], function(r)
-{
-	requirejs.config(
+	paths: {
+		'gw2api': 'src/gw2/gw2api',
+	},
+
+	deps: ['examples/bootstrap'],
+
+	callback: function(r)
 	{
-		paths: {
-			'gw2api': 'src/gw2/gw2api',
-		},
+		var a = require([]);
 
-		//deps: ['lib/requirejs/bootstrap'],
+		var L = require.toUrl('css');
 
-		callback: function(r)
+		console.log([r, L, require.toUrl('gw2api'), require.toUrl('order'), require.toUrl('requirejs'), require.toUrl('jquery'), require.s.contexts._.config.paths]);
+
+		require(['gw2api'], function(gw2api)
 		{
-			var a = require([]);
+			console.log([gw2api, gw2api.apiMap._.alias]);
 
-			var L = require.toUrl('css');
+			console.log(gw2api.get('maps', 15));
+			console.log(gw2api.get('maps', 16));
 
-			console.log([r, L, require.toUrl('gw2api'), require.toUrl('order'), require.toUrl('requirejs'), require.toUrl('jquery'), require.s.contexts._.config.paths]);
-
-			require(['gw2api'], function(gw2api)
-			{
-				console.log([gw2api, gw2api.apiMap._.alias]);
-
-				console.log(gw2api.get('maps', 15));
-				console.log(gw2api.get('maps', 16));
-
-				console.log([gw2api.Cache]);
-			});
-		},
-	});
+			console.log([gw2api.Cache]);
+		});
+	},
 });
