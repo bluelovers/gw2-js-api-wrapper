@@ -362,8 +362,7 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 		mapExists: function(map, alias, apiname)
 		{
-
-			console.log([map, alias, apiname]);
+			//console.log([map, alias, apiname]);
 
 			if (apiname = alias[apiname])
 			{
