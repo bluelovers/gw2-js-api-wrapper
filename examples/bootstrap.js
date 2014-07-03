@@ -14,6 +14,13 @@ define(['lib/requirejs/extend/require.extend'], function()
 
 			'propertyParser': 'lib/requirejs/plugin/propertyParser',
 		},
+
+		map: {
+			'*': {
+
+			},
+		},
+
 	});
 
 	requirejs.config(
@@ -46,6 +53,8 @@ define(['lib/requirejs/extend/require.extend'], function()
 			'jquery.stylesheet': 'lib/jquery/plugin/jquery-stylesheet/jquery.stylesheet',
 
 			'jquery.plus': 'lib/jquery/plugin/jquery.plus',
+
+			'jquery.base64': 'lib/jquery/plugin/jquery.base64/jquery.base64',
 		},
 
 		shim: {
@@ -56,7 +65,9 @@ define(['lib/requirejs/extend/require.extend'], function()
 			'jquery.selector.data': ['jquery'],
 			'jquery.stylesheet': ['jquery'],
 			'jquery.plus': ['jquery'],
+			'jquery.base64': ['jquery'],
 		},
+
 	});
 
 	requirejs.config(
@@ -106,7 +117,7 @@ define(['lib/requirejs/extend/require.extend'], function()
 		shim: {
 
 			'gw2api': {
-				deps: ['load!gw2css', 'jquery'],
+				deps: ['load!gw2css', 'jquery', 'jquery.base64'],
 			},
 
 			'gw2css': {
