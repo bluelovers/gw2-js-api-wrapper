@@ -1,4 +1,4 @@
-define(['jquery'], function($)
+define(['order!jquery', 'order!jquery.base64'], function($)
 {
 
 	function isArray(it)
@@ -36,7 +36,7 @@ define(['jquery'], function($)
 
 			for (var i in this._initHooks.length)
 			{
-				this._initHooks[i].call(this, arguments);
+				this._initHooks[i].apply(this, arguments);
 			}
 		},
 	});
@@ -119,6 +119,8 @@ define(['jquery'], function($)
 		{
 			var _this = this;
 
+			var args = Array.prototype.slice.call(arguments, 1);
+
 			var ret;
 			var iskey = false;
 			var fn;
@@ -138,7 +140,7 @@ define(['jquery'], function($)
 
 				if (fn = O.fn.mapExists(this._data.handler, this._data.handler_alias, apiname))
 				{
-					var args = Array.prototype.slice.call(arguments, 1);
+					//var args = Array.prototype.slice.call(arguments, 1);
 
 					return fn.apply(this, args);
 				}
@@ -157,7 +159,7 @@ define(['jquery'], function($)
 				iskey = true;
 			}
 
-			ret = apimap.getCacheFn ? apimap.getCacheFn.call(this, lang, apiname, iskey, Array.prototype.slice.call(arguments, 1)) : O.Cache.get(lang, apiname);
+			ret = apimap.getCacheFn ? apimap.getCacheFn.call(this, lang, apiname, iskey, args) : O.Cache.get(lang, apiname);
 
 			if (!ret)
 			{
@@ -177,7 +179,7 @@ define(['jquery'], function($)
 					}
 
 					return ret;
-				})(this.api(apiname, apimap.getArgs ? Array.prototype.slice.call(arguments, 1) : null));
+				})(this.api(apiname, apimap.getArgs ? args : null));
 
 				if (fn = O.fn.mapExists(this._data.handler, this._data.handler_alias, apiname))
 				{
@@ -188,7 +190,7 @@ define(['jquery'], function($)
 				{
 					if (apimap.setCacheFn)
 					{
-						apimap.setCacheFn.call(this, lang, apiname, ret, iskey, Array.prototype.slice.call(arguments, 1));
+						apimap.setCacheFn.call(this, lang, apiname, ret, iskey, args);
 					}
 					else
 					{
@@ -337,26 +339,32 @@ define(['jquery'], function($)
 
 			if (isArray(apiname))
 			{
-				//console.log([apiname]);
-
 				name = apiname[0];
-				apiname = apiname[1];
-
-				//console.log([name, apiname]);
-
-				O._data.alias[apiname] = name;
+			}
+			else
+			{
+				name = apiname;
+				var apiname = [apiname];
 			}
 
-			alias[apiname] = alias[O.fn.camelCase(apiname)] = alias[O.fn.camelCase('get-' + apiname)] = name || apiname;
+			for (var i in apiname)
+			{
+				if (name != apiname[i]) O._data.alias[apiname[i]] = name;
+
+				alias[apiname[i]] = alias[O.fn.camelCase(apiname[i])] = alias[O.fn.camelCase('get-' + apiname[i])] = name;
+			}
 
 			if (arguments.length == 4)
 			{
-				map[(name || apiname)] = value;
+				map[name] = value;
 			}
 		},
 
 		mapExists: function(map, alias, apiname)
 		{
+
+			console.log([map, alias, apiname]);
+
 			if (apiname = alias[apiname])
 			{
 				return map[apiname];
@@ -714,6 +722,131 @@ define(['jquery'], function($)
 
 	});
 
+	/**
+	 * http://wiki.guildwars2.com/wiki/Template:Game_link
+	 **/
+	O.ChatLink = $.extend(new Function, C, {
+
+		/**
+		 * http://wiki.guildwars2.com/wiki/Chat_link_format
+		 **/
+		typeid: {
+			item: 2,
+			map: 4,
+			skill: 7,
+			trait: 8,
+			recipe: 10,
+			skin: 11,
+			outfit: 12,
+
+			coin: 1,
+			text: 3,
+		},
+
+		init: function()
+		{
+			var data = new Object;
+
+			for (var i in this.typeid)
+			{
+				data[this.typeid[i]] = i;
+			}
+
+			this.type = data;
+		},
+
+		encode: function(type, id, num)
+		{
+			if (isNaN(id))
+			{
+				return 'invalid id';
+			}
+
+			var type = this.typeid[String.prototype.trim.call(type).toLowerCase()] || (String.prototype.match.call(type, /^\d+$/) ? type : 0);
+
+			if (!type)
+			{
+				return 'invalid type';
+			}
+
+			var data = [];
+			while (id > 0)
+			{
+				i2 = id + 0;
+
+				data.push(i3 = id & 255);
+				id = id >> 8;
+
+				//console.log([i2, i3, id]);
+			}
+			while (data.length < 4 || data.length % 2 != 0)
+			{
+				data.push(0);
+			}
+
+			if (type == 2)
+			{
+				data.unshift(num || 1);
+			}
+			data.unshift(type);
+
+			// encode data
+			var binary = '';
+			for (var i = 0; i < data.length; i++)
+			{
+				binary += String.fromCharCode(data[i]);
+			}
+
+			//console.log([data, binary]);
+
+			return '[&' + $.base64.encode(binary) + ']';
+		},
+
+		decode: function(text)
+		{
+			if (!text)
+			{
+				return;
+			}
+
+			var data = String.prototype.replace.call(text, /^\[\&|\]$/, '');
+
+			data = $.base64.decode(data);
+
+			var binary = [];
+
+			for (var i = 0; i < data.length; i++)
+			{
+				binary[i] = data.charCodeAt(i);
+			}
+
+			var ret = new Object;
+
+			i = 0;
+
+			ret.typeid = binary[i++];
+			ret.type = this.type[ret.typeid] || ('UNKNOW #' + ret.typeid);
+
+			if (ret.typeid == 2)
+			{
+				ret.num = binary[i++];
+			}
+
+			ret.id = binary[i++];
+			ret.id += binary[i++] << 8;
+
+			ret.source = text + '';
+			ret.binary = binary;
+
+			//console.log([data.length, ret, binary, binary2]);
+
+			return ret;
+		},
+
+	});
+
+	C.call(O.ChatLink);
+
 	O.fn._apiupdate();
 
 	O.on(['asset/url', 'file/url'], function(signature, id, format)
@@ -746,6 +879,12 @@ define(['jquery'], function($)
 	}).on(['map/tile/url', 'tile/url'], function(continentID, floorID, z, x, y, s)
 	{
 		return 'https://tiles' + (s ? s : '') + '.guildwars2.com/' + continentID + '/' + floorID + '/' + z + '/' + x + '/' + y + '.jpg';
+	}).on(['chat/link/encode', 'chat/link'], function(type, id, num)
+	{
+		return O.ChatLink.encode.apply(O.ChatLink, arguments);
+	}).on(['chat/link/decode'], function(text)
+	{
+		return O.ChatLink.decode.apply(O.ChatLink, arguments);
 	});
 
 	O.update();
