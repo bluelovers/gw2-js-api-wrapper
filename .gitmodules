@@ -22,3 +22,6 @@
 [submodule "lib/leafletjs/plugin/Leaflet.groupedlayercontrol"]
 	path = lib/leafletjs/plugin/Leaflet.groupedlayercontrol
 	url = https://github.com/ismyrnow/Leaflet.groupedlayercontrol.git
+[submodule "lib/jquery/plugin/jquery.base64"]
+	path = lib/jquery/plugin/jquery.base64
+	url = https://github.com/yckart/jquery.base64.js.git
