@@ -14,7 +14,7 @@ requirejs.config(
 
 		var L = require.toUrl('css');
 
-		console.log([a, r, L, require.toUrl('gw2api'), require.toUrl('order'), require.toUrl('requirejs'), require.toUrl('jquery'), require.s.contexts._.config.paths]);
+		console.log([a, r, L, require.toUrl('gw2api'), require.toUrl('order'), require.toUrl('requirejs'), require.toUrl('jquery'), require.s.contexts._.config]);
 
 		require(['gw2api', 'scriptpath'], function(gw2api, scriptpath)
 		{
@@ -24,6 +24,11 @@ requirejs.config(
 			console.log(gw2api.get('maps', 16));
 
 			console.log([gw2api.Cache, scriptpath()]);
+
+			var a;
+
+
+			console.log([a = gw2api.get('chat/link/encode', 'item', 49532, 250), gw2api.ChatLink.decode(a)]);
 		});
 	},
 });
