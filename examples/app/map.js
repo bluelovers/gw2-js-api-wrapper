@@ -94,7 +94,7 @@ require(['../../src/main'], function()
 
 			gw2map.on("zoomstart", function(e)
 			{
-				$pane_waypoint.hide();
+				$pane_waypoint.stop().hide();
 			}).on("zoomend", function(e)
 			{
 				var currentIconSize = gw2map.currentIconSize();
@@ -113,7 +113,7 @@ require(['../../src/main'], function()
 				}
 			}).getControl('layers').toggleOverlay(cities, true);
 
-			$pane_waypoint.hide().delay(1000).fadeIn('slow');
+			$pane_waypoint.stop().hide().delay(1000).fadeIn('slow');
 
 		})(gw2map.getMapFloor());
 
