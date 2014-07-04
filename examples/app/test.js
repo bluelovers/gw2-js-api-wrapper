@@ -28,7 +28,9 @@ requirejs.config(
 			var a;
 
 
-			console.log([a = gw2api.get('chat/link/encode', 'item', 49532, 250), gw2api.ChatLink.decode(a)]);
+			console.log([a = gw2api.get('chat/link/encode', 'item', 49532, 250), gw2api.ChatLink.decode(a), gw2api.ChatLink.decode('&AvtgTAAA')]);
+
+			console.log([gw2api.ChatLink(), gw2api()]);
 		});
 	},
 });
