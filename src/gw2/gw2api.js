@@ -6,44 +6,121 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 		return Object.prototype.toString.call(it) === '[object Array]';
 	}
 
-	var C = function()
+	var create = Object.create || (function()
 	{
-		if (this.init)
+		function F()
 		{
-			this.init.apply(this, arguments);
 		}
-
-		// call all constructor hooks
-		if (this._initHooks.length)
+		return function(proto)
 		{
-			this.callInitHooks.apply(this, arguments);
-		}
+			F.prototype = proto;
+			return new F();
+		};
+	})();
 
-		return this;
-	};
+	var C = new Function;
 
-	$.extend(C, {
-		_initHooks: [],
+	C.extend = function(props)
+	{
+		// extended class with the new prototype
+		var NewClass = function()
+		{
+			//console.log([123, this === O, NewClass.__self__ !== O, this, NewClass]);
 
-		callInitHooks: function()
+			if ((this === O && NewClass.__self__ !== O) || typeof this.__super__ === 'undefined')
+			{
+				var _this = NewClass.__self__;
+			}
+			else
+			{
+				var _this = this;
+			}
+
+			//console.log([123, _this]);
+
+			//var _this = this;
+
+			if (!_this.__initialized__)
+			{
+				_this.__initialized__ = true;
+
+				if (_this.init)
+				{
+					_this.init.apply(_this, arguments);
+				}
+
+				// call all constructor hooks
+				if (_this._initHooks.length)
+				{
+					_this.callInitHooks.apply(_this, arguments);
+				}
+			}
+
+			return _this;
+		};
+
+		// jshint camelcase: false
+		var parentProto = NewClass.__super__ = this.prototype;
+
+		var proto = create(parentProto);
+		proto.constructor = NewClass;
+
+		NewClass.prototype = proto;
+		NewClass.__proto__.constructor = NewClass;
+
+		// mix given properties into the prototype
+		$.extend(proto, props);
+
+		proto._initHooks = [];
+
+		// add method for calling all hooks
+		proto.callInitHooks = function()
 		{
 			if (this._initHooksCalled)
 			{
 				return;
 			}
 
+			if (parentProto.callInitHooks)
+			{
+				parentProto.callInitHooks.apply(this, arguments);
+			}
+
 			this._initHooksCalled = true;
 
-			for (var i in this._initHooks.length)
+			for (var i = 0, len = proto._initHooks.length; i < len; i++)
 			{
-				this._initHooks[i].apply(this, arguments);
+				proto._initHooks[i].apply(this, arguments);
 			}
-		},
-	});
+		};
 
-	var O = $.extend(new Function, C);
+		$.extend(NewClass, proto);
 
-	$.extend(O, {
+		NewClass.__self__ = NewClass;
+
+		return NewClass;
+	};
+
+	C.include = function(props)
+	{
+		$.extend(this.prototype, props);
+	};
+
+	C.addInitHook = function(fn)
+	{ // (Function) || (String, args...)
+		var args = Array.prototype.slice.call(arguments, 1);
+
+		var init = typeof fn === 'function' ? fn : function()
+		{
+			this[fn].apply(this, args);
+		};
+
+		this.prototype._initHooks = this.prototype._initHooks || [];
+		this.prototype._initHooks.push(init);
+	};
+
+	var O = C.extend(
+	{
 
 		_data: {
 			lang: 'en',
@@ -67,6 +144,24 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 			alias: {
 			},
+		},
+
+		init: function()
+		{
+			for (var i in this)
+			{
+				//console.log([i, this[i], typeof this[i]]);
+
+				if (i !== 'prototype' && !i.match(/^_/) && this.hasOwnProperty(i))
+				{
+					if (typeof this[i] === 'function' && this[i].__super__)
+					{
+						this[i].call(this[i]);
+					}
+				}
+			}
+
+			O.update();
 		},
 
 		api: function(apiname, args)
@@ -314,7 +409,10 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 	});
 
-	O.fn = $.extend(new Object, {
+	//console.log([O, C]);
+
+	O.fn =
+	{
 
 		camelCase: function(string)
 		{
@@ -491,7 +589,7 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 			return data;
 		},
 
-	});
+	};
 
 	O.apiMap = $.extend(new Object, {
 
@@ -681,7 +779,8 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 	});
 
-	O.Cache = $.extend(new Function, C, {
+	O.Cache = C.extend(
+	{
 
 		_cache: {
 
@@ -724,7 +823,8 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 	/**
 	 * http://wiki.guildwars2.com/wiki/Template:Game_link
 	 **/
-	O.ChatLink = $.extend(new Function, C, {
+	O.ChatLink = C.extend(
+	{
 
 		/**
 		 * http://wiki.guildwars2.com/wiki/Chat_link_format
@@ -756,7 +856,9 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 		encode: function(type, id, num)
 		{
-			if (isNaN(id))
+			var id = this.intval(id);
+
+			if (!id)
 			{
 				return 'invalid id';
 			}
@@ -785,7 +887,7 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 			if (type == 2)
 			{
-				data.unshift(num || 1);
+				data.unshift(this.intval(num, 1));
 			}
 			data.unshift(type);
 
@@ -842,9 +944,21 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 			return ret;
 		},
 
+		intval: function(n, d)
+		{
+			return (function(n)
+			{
+				return (n && !isNaN(n)) ? n : (d ? this.intval(d) : 0);
+			})(parseInt(n));
+		},
+
 	});
 
-	C.call(O.ChatLink);
+	//C.call(O.ChatLink);
+
+	//O.ChatLink();
+
+	//console.log([O.ChatLink.call(O.ChatLink), O.ChatLink(), O.ChatLink]);
 
 	O.fn._apiupdate();
 
@@ -886,8 +1000,6 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 		return O.ChatLink.decode.apply(O.ChatLink, arguments);
 	});
 
-	O.update();
-
-	return require.register('gw2api', O);
+	return require.register('gw2api', O.call(O));
 
 });
