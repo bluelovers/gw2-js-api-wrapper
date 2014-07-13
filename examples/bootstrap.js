@@ -18,6 +18,14 @@ define(['lib/requirejs/extend/require.extend'], function()
 		map: {
 			'*': {
 
+				gw2api: 'gw2api.search',
+
+			},
+
+			'gw2api.search': {
+
+				gw2api: 'gw2api',
+
 			},
 		},
 
@@ -28,6 +36,8 @@ define(['lib/requirejs/extend/require.extend'], function()
 
 		paths: {
 			'scriptpath': 'lib/others/scriptpath',
+
+			'jsel': 'lib/others/jsel/jsel',
 		},
 
 		shim: {
@@ -112,17 +122,24 @@ define(['lib/requirejs/extend/require.extend'], function()
 
 			'menomonia': 'https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia',
 			'menomonia-italic': 'https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia-italic',
+
+			'gw2api.search': 'src/gw2/plugin/gw2api.search',
 		},
 
 		shim: {
 
 			'gw2api': {
-				deps: ['load!gw2css', 'jquery', 'jquery.base64'],
+				deps: ['load!gw2css', 'order!jquery', 'order!jquery.base64'],
 			},
 
 			'gw2css': {
 				deps: ['load!menomonia', 'load!menomonia-italic'],
 			},
+
+			'gw2api.search': {
+				deps: ['gw2api', 'jsel'],
+			},
+
 		},
 	});
 
