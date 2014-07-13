@@ -68,6 +68,14 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 		NewClass.prototype = proto;
 		NewClass.__proto__.constructor = NewClass;
 
+		for (var i in this)
+		{
+			if (this.hasOwnProperty(i) && i !== 'prototype')
+			{
+				NewClass[i] = this[i];
+			}
+		}
+
 		// mix given properties into the prototype
 		$.extend(proto, props);
 
@@ -103,11 +111,15 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 	C.include = function(props)
 	{
+		$.extend(this, props);
 		$.extend(this.prototype, props);
+
+		return this;
 	};
 
 	C.addInitHook = function(fn)
-	{ // (Function) || (String, args...)
+	{
+		// (Function) || (String, args...)
 		var args = Array.prototype.slice.call(arguments, 1);
 
 		var init = typeof fn === 'function' ? fn : function()
@@ -117,6 +129,8 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 
 		this.prototype._initHooks = this.prototype._initHooks || [];
 		this.prototype._initHooks.push(init);
+
+		return this;
 	};
 
 	var O = C.extend(
