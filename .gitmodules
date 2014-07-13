@@ -25,3 +25,6 @@
 [submodule "lib/jquery/plugin/jquery.base64"]
 	path = lib/jquery/plugin/jquery.base64
 	url = https://github.com/yckart/jquery.base64.js.git
+[submodule "lib/others/jsel"]
+	path = lib/others/jsel
+	url = https://github.com/dragonworx/jsel.git
