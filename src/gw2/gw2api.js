@@ -44,9 +44,9 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 			{
 				_this.__initialized__ = true;
 
-				if (_this.init)
+				if (_this.initialize)
 				{
-					_this.init.apply(_this, arguments);
+					_this.initialize.apply(_this, arguments);
 				}
 
 				// call all constructor hooks
@@ -160,7 +160,7 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 			},
 		},
 
-		init: function()
+		initialize: function()
 		{
 			for (var i in this)
 			{
@@ -856,7 +856,7 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 			text: 3,
 		},
 
-		init: function()
+		initialize: function()
 		{
 			var data = new Object;
 
