@@ -68,14 +68,6 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 		NewClass.prototype = proto;
 		NewClass.__proto__.constructor = NewClass;
 
-		for (var i in this)
-		{
-			if (this.hasOwnProperty(i) && i !== 'prototype')
-			{
-				NewClass[i] = this[i];
-			}
-		}
-
 		// mix given properties into the prototype
 		$.extend(proto, props);
 
@@ -102,7 +94,7 @@ define(['order!jquery', 'order!jquery.base64'], function($)
 			}
 		};
 
-		$.extend(NewClass, proto);
+		$.extend(NewClass, this, proto);
 
 		NewClass.__self__ = NewClass;
 
